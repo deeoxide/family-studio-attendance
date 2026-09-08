@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/classical-ffe72c33-8600-4702-ab21-e7845c96a5a1/styles.css">
+<script src="_ds/classical-ffe72c33-8600-4702-ab21-e7845c96a5a1/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+body { margin: 0; background: #f3f2f2; }
+a { color: var(--color-accent-700); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--color-accent-800); }
+* { -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);font-family:var(--font-body);color:var(--color-text);padding:36px 20px 64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:28px">
+
+  <div style="max-width:700px;width:100%">
+    <div style="font-family:var(--font-body);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700);font-variant-numeric:tabular-nums">Attendance · Leave · Payroll</div>
+    <h1 style="font-family:var(--font-heading);font-weight:400;font-size:38px;line-height:1.1;margin:8px 0 12px">A minimal attendance app for a Lao workplace</h1>
+    <p style="margin:0;font-size:14px;line-height:1.75;text-align:justify;color:var(--color-neutral-800);max-width:60ch">Four tabs, one primary action per screen. Check-in is gated on a 10 metre geofence around the registered office. Leave balances and working-day counts follow the Labour Law and the official holiday list of the Ministry of Labour and Social Welfare. Payroll shows the payslip an employee actually needs to read: net pay, then the deductions behind it.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+      <span class="tag tag-outline">White ground ≈ 90%</span>
+      <span class="tag tag-accent">Gold accent ≈ 7%</span>
+      <span class="tag tag-neutral">Ink ≈ 3%</span>
+    </div>
+    <div class="hr" style="margin:22px 0 0"></div>
+    <p style="margin:14px 0 0;font-size:12.5px;line-height:1.7;color:var(--color-neutral-700)">The phone below is live — move the distance slider to leave and re-enter the geofence, check in and out, apply for leave, open a payslip. Copy is English; Lao localisation is a next step, not a guess I want to make for you.</p>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:#fff;box-shadow:var(--shadow-sm);flex-wrap:wrap;justify-content:center">
+    <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-700)">Simulate distance</span>
+    <input type="range" min="0" max="40" step="1" value="{{ dist }}" onInput="{{ onDist }}" style="width:180px;accent-color:var(--color-accent);height:24px" />
+    <span style="font-family:var(--font-heading);font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;min-width:52px;text-align:right">{{ distLabel }}</span>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 402 }}" height="{{ 874 }}" hint-size="402px,874px">
+
+    <div style="height:100%;display:flex;flex-direction:column;background:#ffffff;font-family:var(--font-body);color:var(--color-text)">
+
+      <div style="padding:56px 20px 12px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--color-divider);flex:none">
+        <div>
+          <div style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-accent-700)">{{ officeName }}</div>
+          <div style="font-family:var(--font-heading);font-weight:600;font-size:23px;line-height:1.15;margin-top:3px">{{ screenTitle }}</div>
+        </div>
+        <div style="width:38px;height:38px;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-neutral-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--color-neutral-800)">SK</div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;overflow-x:hidden">
+
+        <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="Home" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:16px;background:#fff">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-700)">Location check</div>
+              <span class="tag {{ rangeTagClass }}" style="font-size:10px">{{ rangeLabel }}</span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:18px">
+              <svg viewBox="0 0 120 120" style="width:104px;height:104px;flex:none">
+                <circle cx="60" cy="60" r="56" fill="none" stroke="var(--color-neutral-200)" stroke-width="1"></circle>
+                <circle cx="60" cy="60" r="36" fill="none" stroke="var(--color-neutral-200)" stroke-width="1"></circle>
+                <circle cx="60" cy="60" r="18" fill="var(--color-accent-100)" stroke="var(--color-accent)" stroke-width="1.25"></circle>
+                <circle cx="60" cy="60" r="2.6" fill="var(--color-accent-700)"></circle>
+                <line x1="60" y1="60" x2="{{ dotX }}" y2="{{ dotY }}" stroke="var(--color-neutral-400)" stroke-width="1" stroke-dasharray="2 3"></line>
+                <circle cx="{{ dotX }}" cy="{{ dotY }}" r="5.5" fill="#fff" stroke="var(--color-neutral-900)" stroke-width="1.5"></circle>
+              </svg>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:baseline;gap:6px">
+                  <span style="font-family:var(--font-heading);font-weight:400;font-size:40px;line-height:1;font-variant-numeric:tabular-nums">{{ dist }}</span>
+                  <span style="font-size:13px;color:var(--color-neutral-700)">m from office</span>
+                </div>
+                <div style="height:1px;background:var(--color-divider);margin:12px 0"></div>
+                <div style="font-size:12px;line-height:1.6;color:var(--color-neutral-800)">Allowed radius <strong style="font-variant-numeric:tabular-nums">{{ radius }} m</strong><br />GPS accuracy ±3 m</div>
+              </div>
+            </div>
+
+            <sc-if value="{{ isOut }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ onCheckIn }}" disabled="{{ outOfRange }}" style="width:100%;min-height:52px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:var(--font-heading);font-weight:600;font-size:17px;letter-spacing:.02em;cursor:pointer;opacity:{{ ciOpacity }}" style-hover="background:var(--color-accent-200)" style-active="background:var(--color-accent-300)">{{ checkInLabel }}</button>
+            </sc-if>
+
+            <sc-if value="{{ isIn }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--color-accent-200);background:var(--color-accent-100);border-radius:var(--radius-md)">
+                <div style="font-size:12px;color:var(--color-accent-800)">Working since {{ inTime }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;color:var(--color-accent-800)">{{ elapsed }}</div>
+              </div>
+              <button onClick="{{ onCheckOut }}" disabled="{{ outOfRange }}" style="width:100%;min-height:52px;border:1.5px solid var(--color-neutral-900);border-radius:var(--radius-md);background:#fff;color:var(--color-neutral-900);font-family:var(--font-heading);font-weight:600;font-size:17px;cursor:pointer;opacity:{{ coOpacity }}" style-hover="background:var(--color-neutral-100)">{{ checkOutLabel }}</button>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isDone }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--color-divider);border-radius:var(--radius-md)">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent-700)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                <div style="font-size:12.5px;line-height:1.5">Day recorded · <strong style="font-variant-numeric:tabular-nums">{{ workedTotal }}</strong> worked</div>
+              </div>
+              <button onClick="{{ onReset }}" style="align-self:flex-start;min-height:44px;padding:0 4px;border:none;background:none;color:var(--color-accent-700);font-family:var(--font-body);font-size:12.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer">Reset the demo day</button>
+            </div>
+            </sc-if>
+          </div>
+
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md)">
+            <div style="padding:13px 16px;border-bottom:1px solid var(--color-divider);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-700)">Today · {{ todayLong }}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr">
+              <div style="padding:14px 16px;border-right:1px solid var(--color-divider)">
+                <div style="font-size:10.5px;color:var(--color-neutral-700);letter-spacing:.06em">CHECK IN</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;margin-top:2px">{{ inCell }}</div>
+              </div>
+              <div style="padding:14px 16px;border-right:1px solid var(--color-divider)">
+                <div style="font-size:10.5px;color:var(--color-neutral-700);letter-spacing:.06em">CHECK OUT</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;margin-top:2px">{{ outCell }}</div>
+              </div>
+              <div style="padding:14px 16px">
+                <div style="font-size:10.5px;color:var(--color-neutral-700);letter-spacing:.06em">HOURS</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;margin-top:2px">{{ hoursCell }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">This month</div>
+              <span style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">1–8 Sep 2026</span>
+            </div>
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);display:grid;grid-template-columns:1fr 1fr 1fr;overflow:hidden">
+              <div style="padding:14px 8px;text-align:center;border-right:1px solid var(--color-divider)">
+                <div style="font-family:var(--font-heading);font-weight:400;font-size:28px;line-height:1;font-variant-numeric:tabular-nums">5</div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">Present</div>
+              </div>
+              <div style="padding:14px 8px;text-align:center;border-right:1px solid var(--color-divider)">
+                <div style="font-family:var(--font-heading);font-weight:400;font-size:28px;line-height:1;font-variant-numeric:tabular-nums;color:var(--color-accent-700)">1</div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">Late</div>
+              </div>
+              <div style="padding:14px 8px;text-align:center">
+                <div style="font-family:var(--font-heading);font-weight:400;font-size:28px;line-height:1;font-variant-numeric:tabular-nums">0</div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">Leave</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:15px;margin-bottom:8px">Recent days</div>
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+              <sc-for list="{{ history }}" as="row" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--color-divider)">
+                  <div>
+                    <div style="font-size:13px">{{ row.day }}</div>
+                    <div style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums;margin-top:2px">{{ row.span }}</div>
+                  </div>
+                  <span class="tag {{ row.cls }}" style="font-size:10px">{{ row.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isLeave }}">
+        <div data-screen-label="Leave" style="padding:0 0 28px">
+
+          <div style="display:flex;border-bottom:1px solid var(--color-divider);position:sticky;top:0;background:#fff;z-index:2">
+            <sc-for list="{{ leaveTabs }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.onClick }}" style="flex:1;min-height:46px;border:none;background:none;font-family:var(--font-body);font-size:12.5px;cursor:pointer;color:{{ t.color }};border-bottom:2px solid {{ t.line }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+
+            <sc-if value="{{ isBalance }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ balances }}" as="b" hint-placeholder-count="3">
+                <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:15px 16px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between">
+                    <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">{{ b.name }}</div>
+                    <div style="font-size:12px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ b.taken }} of {{ b.total }} used</div>
+                  </div>
+                  <div style="height:6px;background:var(--color-neutral-200);border-radius:99px;margin:11px 0 9px;overflow:hidden">
+                    <div style="height:100%;width:{{ b.pct }};background:var(--color-accent)"></div>
+                  </div>
+                  <div style="display:flex;align-items:baseline;justify-content:space-between">
+                    <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.5;max-width:24ch">{{ b.note }}</div>
+                    <div style="font-family:var(--font-heading);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums;color:var(--color-accent-800)">{{ b.left }} <span style="font-size:11px;font-family:var(--font-body);font-weight:400;color:var(--color-neutral-700)">left</span></div>
+                  </div>
+                </div>
+              </sc-for>
+              <button onClick="{{ onOpenApply }}" style="width:100%;min-height:52px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:var(--font-heading);font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--color-accent-200)">Apply for leave</button>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isHolidays }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="border:1px solid var(--color-accent-200);background:var(--color-accent-100);border-radius:var(--radius-md);padding:15px 16px">
+                <div style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-accent-800)">Next public holiday</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:21px;margin-top:5px;color:var(--color-accent-900)">Lao National Day</div>
+                <div style="font-size:12px;color:var(--color-accent-800);margin-top:3px;font-variant-numeric:tabular-nums">Wednesday 2 December 2026 · in 85 days</div>
+              </div>
+              <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+                <div style="padding:12px 16px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-divider)">Official holidays 2026</div>
+                <sc-for list="{{ holidays }}" as="h" hint-placeholder-count="6">
+                  <div style="display:flex;gap:14px;padding:13px 16px;border-bottom:1px solid var(--color-divider)">
+                    <div style="width:66px;flex:none;font-family:var(--font-heading);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums;color:var(--color-accent-700)">{{ h.date }}</div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:13px;line-height:1.4">{{ h.name }}</div>
+                      <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px">{{ h.note }}</div>
+                    </div>
+                    <div style="font-size:11px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums;flex:none">{{ h.days }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:11px;line-height:1.7;color:var(--color-neutral-700);text-align:justify">Holidays follow the annual notice of the Ministry of Labour and Social Welfare. When a holiday falls on a weekend the substitute working day is announced with the notice and syncs to this list; leave requests never consume a holiday.</p>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isRequests }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ requests }}" as="r" hint-placeholder-count="3">
+                <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:14px 16px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                    <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">{{ r.type }}</div>
+                    <span class="tag {{ r.cls }}" style="font-size:10px">{{ r.status }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--color-neutral-800);margin-top:6px;font-variant-numeric:tabular-nums">{{ r.range }} · {{ r.days }}</div>
+                  <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:4px;line-height:1.5">{{ r.reason }}</div>
+                </div>
+              </sc-for>
+              <button onClick="{{ onOpenApply }}" style="width:100%;min-height:52px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:var(--font-heading);font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--color-accent-200)">Apply for leave</button>
+            </div>
+            </sc-if>
+
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isPay }}">
+        <div data-screen-label="Payroll" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+
+          <sc-if value="{{ payListOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px 16px">
+              <div style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-700)">Net pay · August 2026</div>
+              <div style="display:flex;align-items:baseline;gap:7px;margin-top:8px">
+                <span style="font-family:var(--font-heading);font-weight:400;font-size:38px;line-height:1;font-variant-numeric:tabular-nums">{{ latestNet }}</span>
+                <span style="font-size:14px;color:var(--color-neutral-700)">LAK</span>
+              </div>
+              <div style="height:1px;background:var(--color-divider);margin:14px 0"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.5">Paid 29 Aug 2026<br />BCEL ···· 4417</div>
+                <button onClick="{{ onOpenLatest }}" style="min-height:44px;padding:0 16px;border:1px solid var(--color-accent);border-radius:var(--radius-md);background:none;color:var(--color-accent-800);font-family:var(--font-body);font-size:12.5px;cursor:pointer" style-hover="background:var(--color-accent-100)">View payslip</button>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:15px;margin-bottom:8px">Earlier payslips</div>
+              <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+                <sc-for list="{{ payslips }}" as="p" hint-placeholder-count="4">
+                  <button onClick="{{ p.onClick }}" style="width:100%;min-height:56px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:none;border-top:1px solid var(--color-divider);background:none;font-family:var(--font-body);cursor:pointer;text-align:left" style-hover="background:var(--color-neutral-100)">
+                    <div>
+                      <div style="font-size:13px">{{ p.period }}</div>
+                      <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px;font-variant-numeric:tabular-nums">Paid {{ p.paid }}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <span style="font-family:var(--font-heading);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums">{{ p.net }}</span>
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--color-neutral-500)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ payDetailOpen }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <button onClick="{{ onClosePay }}" style="align-self:flex-start;min-height:44px;display:flex;align-items:center;gap:6px;border:none;background:none;padding:0;color:var(--color-accent-700);font-family:var(--font-body);font-size:12.5px;cursor:pointer">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+              All payslips
+            </button>
+            <div>
+              <div style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-accent-700)">Payslip</div>
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:24px;margin-top:4px">{{ payDetail.period }}</div>
+              <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:3px">Somchai Keomany · Operations · ID 0142</div>
+            </div>
+            <table class="table" style="width:100%;font-size:12.5px">
+              <tbody>
+                <sc-for list="{{ payDetail.lines }}" as="l" hint-placeholder-count="7">
+                  <tr>
+                    <td style="padding:11px 0;border-bottom:1px solid var(--color-divider);color:{{ l.color }};font-weight:{{ l.weight }}">{{ l.label }}</td>
+                    <td style="padding:11px 0;border-bottom:1px solid var(--color-divider);text-align:right;font-variant-numeric:tabular-nums;color:{{ l.color }};font-weight:{{ l.weight }}">{{ l.value }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <div style="border:1px solid var(--color-accent-200);background:var(--color-accent-100);border-radius:var(--radius-md);padding:15px 16px;display:flex;align-items:baseline;justify-content:space-between">
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:15px;color:var(--color-accent-900)">Net pay</div>
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums;color:var(--color-accent-900)">{{ payDetail.net }}</div>
+            </div>
+            <p style="margin:0;font-size:11px;line-height:1.7;color:var(--color-neutral-700);text-align:justify">Social security is withheld at 5.5% of the contributory wage; income tax uses the progressive monthly bands. Overtime is calculated from the approved attendance records for the period.</p>
+          </div>
+          </sc-if>
+
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isMe }}">
+        <div data-screen-label="Profile" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--color-divider)">
+            <div style="width:56px;height:56px;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-neutral-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:600;font-size:19px;color:var(--color-neutral-800)">SK</div>
+            <div>
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:19px">Somchai Keomany</div>
+              <div style="font-size:12px;color:var(--color-neutral-700);margin-top:2px">Operations · ID 0142</div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+            <div style="padding:12px 16px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-divider)">Registered workplace</div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:7px">
+              <div style="font-size:13px">{{ officeName }}</div>
+              <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.6">Ban Phonthan, Saysettha, Vientiane<br /><span style="font-variant-numeric:tabular-nums">17.9757° N, 102.6331° E · radius {{ radius }} m</span></div>
+              <div style="font-size:11.5px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">Shift 08:00 – 17:00 · Mon to Fri</div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+            <sc-for list="{{ settings }}" as="s" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--color-divider)">
+                <div style="font-size:13px">{{ s.label }}</div>
+                <button onClick="{{ s.onClick }}" style="width:44px;height:26px;flex:none;border-radius:99px;border:1px solid {{ s.border }};background:{{ s.bg }};position:relative;cursor:pointer;padding:0">
+                  <span style="position:absolute;top:2px;left:{{ s.knob }};width:20px;height:20px;border-radius:50%;background:#fff;border:1px solid {{ s.border }};transition:left .16s ease"></span>
+                </button>
+              </div>
+            </sc-for>
+          </div>
+          <button style="width:100%;min-height:48px;border:1px solid var(--color-neutral-300);border-radius:var(--radius-md);background:none;font-family:var(--font-body);font-size:13px;color:var(--color-neutral-800);cursor:pointer" style-hover="background:var(--color-neutral-100)">Sign out</button>
+        </div>
+        </sc-if>
+
+      </div>
+
+      <div style="flex:none;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-top:1px solid var(--color-divider);padding-bottom:22px;background:#fff">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+          <button onClick="{{ t.onClick }}" style="min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:none;background:none;cursor:pointer;color:{{ t.color }};font-family:var(--font-body);padding:8px 0 4px">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{ t.icon }}"></path></svg>
+            <span style="font-size:10px;letter-spacing:.04em">{{ t.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ applyOpen }}">
+      <div style="position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;justify-content:flex-end">
+        <div onClick="{{ onCloseApply }}" style="position:absolute;inset:0;background:rgba(32,31,29,.32)"></div>
+        <div style="position:relative;background:#fff;border-top-left-radius:14px;border-top-right-radius:14px;box-shadow:var(--shadow-lg);padding:20px 20px 30px;display:flex;flex-direction:column;gap:14px;max-height:78%;overflow-y:auto">
+          <div style="display:flex;align-items:baseline;justify-content:space-between">
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:20px">Apply for leave</div>
+            <button onClick="{{ onCloseApply }}" style="min-height:44px;min-width:44px;border:none;background:none;cursor:pointer;color:var(--color-neutral-700);font-size:18px">×</button>
+          </div>
+
+          <div class="field">
+            <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">Type</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:7px">
+              <sc-for list="{{ typeOpts }}" as="o" hint-placeholder-count="4">
+                <button onClick="{{ o.onClick }}" style="min-height:44px;padding:0 14px;border:1px solid {{ o.border }};border-radius:var(--radius-md);background:{{ o.bg }};color:{{ o.color }};font-family:var(--font-body);font-size:12.5px;cursor:pointer">{{ o.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px">
+            <div class="field" style="flex:1;min-width:0">
+              <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">From</label>
+              <input class="input" type="date" value="{{ form.from }}" onChange="{{ onFrom }}" style="width:100%;min-height:46px;box-sizing:border-box;margin-top:6px" />
+            </div>
+            <div class="field" style="flex:1;min-width:0">
+              <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">To</label>
+              <input class="input" type="date" value="{{ form.to }}" onChange="{{ onTo }}" style="width:100%;min-height:46px;box-sizing:border-box;margin-top:6px" />
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-neutral-100)">
+            <div style="font-size:11.5px;line-height:1.55;color:var(--color-neutral-800)">{{ calcNote }}</div>
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums;flex:none">{{ calcDays }}</div>
+          </div>
+
+          <div class="field">
+            <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">Reason</label>
+            <textarea class="input" rows="2" value="{{ form.reason }}" onChange="{{ onReason }}" placeholder="Optional for annual leave" style="width:100%;box-sizing:border-box;margin-top:6px;font-family:var(--font-body);resize:none"></textarea>
+          </div>
+
+          <sc-if value="{{ hasError }}">
+          <div style="font-size:11.5px;color:var(--color-accent-800);border-left:2px solid var(--color-accent);padding-left:10px;line-height:1.5">{{ error }}</div>
+          </sc-if>
+
+          <button onClick="{{ onSubmit }}" style="width:100%;min-height:52px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:var(--font-heading);font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--color-accent-200)">Send to Ms. Vandara</button>
+          <div style="font-size:11px;color:var(--color-neutral-700);text-align:center">Approver replies in the app · balance updates on approval</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ toastOpen }}">
+      <div style="position:absolute;left:20px;right:20px;bottom:96px;z-index:90;display:flex;align-items:center;gap:10px;padding:13px 15px;border:1px solid var(--color-neutral-900);background:var(--color-neutral-900);color:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-md)">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--color-accent-300)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+        <span style="font-size:12.5px">{{ toast }}</span>
+      </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+
+  <div style="max-width:700px;width:100%">
+    <div class="hr" style="margin:0 0 18px"></div>
+    <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;margin-bottom:8px">Where this could go next</div>
+    <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.85;color:var(--color-neutral-800)">
+      <li>Lao-language copy throughout, with a language switch in Profile — tell me if you want me to write it in Lao.</li>
+      <li>Manager view: an approval inbox and a team-present-today list.</li>
+      <li>HR view: editing the holiday notice each year, and the geofence per office.</li>
+      <li>Offline check-in queued on the device for sites with weak signal.</li>
+    </ul>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;officeName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Mekong Trading Co.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;radius&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:10,&quot;min&quot;:5,&quot;max&quot;:100,&quot;unit&quot;:&quot;m&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+const LAK = n => n.toLocaleString('en-US');
+
+const HOLIDAYS = [
+  { date: '1 Jan', name: "International New Year's Day", note: 'Thursday', days: '1 day' },
+  { date: '8 Mar', name: "International Women's Day", note: 'Sunday · women employees', days: '1 day' },
+  { date: '14–16 Apr', name: 'Lao New Year (Pi Mai Lao)', note: 'Tuesday to Thursday', days: '3 days' },
+  { date: '1 May', name: 'International Labour Day', note: 'Friday', days: '1 day' },
+  { date: '2 Dec', name: 'Lao National Day', note: 'Wednesday', days: '1 day' },
+];
+
+const HOLIDAY_ISO = ['2026-01-01','2026-03-08','2026-04-14','2026-04-15','2026-04-16','2026-05-01','2026-12-02'];
+
+const PAYSLIPS = [
+  { period: 'August 2026', paid: '29 Aug 2026', basic: 4500000, ot: 320000, allow: 500000 },
+  { period: 'July 2026', paid: '29 Jul 2026', basic: 4500000, ot: 180000, allow: 500000 },
+  { period: 'June 2026', paid: '29 Jun 2026', basic: 4500000, ot: 240000, allow: 500000 },
+  { period: 'May 2026', paid: '29 May 2026', basic: 4500000, ot: 0, allow: 500000 },
+];
+
+function computePay(p) {
+  const gross = p.basic + p.ot + p.allow;
+  const sso = Math.round(gross * 0.055);
+  let tax = 0;
+  if (gross > 1300000) tax += Math.min(gross, 5000000) - 1300000;
+  tax = Math.round(tax * 0.05);
+  if (gross > 5000000) tax += Math.round((Math.min(gross, 15000000) - 5000000) * 0.10);
+  const net = gross - sso - tax;
+  return { gross, sso, tax, net };
+}
+
+const TYPES = ['Annual', 'Sick', 'Maternity', 'Unpaid'];
+
+class Component extends DCLogic {
+  state = {
+    tab: 'home',
+    leaveTab: 'balance',
+    dist: 4,
+    status: 'out',
+    inTime: null,
+    outTime: null,
+    tick: 0,
+    applyOpen: false,
+    payOpen: null,
+    toast: null,
+    form: { type: 'Annual', from: '2026-09-21', to: '2026-09-23', reason: '' },
+    error: null,
+    toggles: { late: true, payslip: true, holiday: false },
+    requests: [
+      { type: 'Annual leave', range: '13 – 14 Jul 2026', days: '2 working days', status: 'Approved', cls: 'tag-accent', reason: 'Family trip to Luang Prabang' },
+      { type: 'Sick leave', range: '2 Jun 2026', days: '1 working day', status: 'Approved', cls: 'tag-accent', reason: 'Clinic certificate attached' },
+      { type: 'Annual leave', range: '20 – 22 Apr 2026', days: '3 working days', status: 'Rejected', cls: 'tag-outline', reason: 'Overlapped with stock count' },
+    ],
+  };
+
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      if (this.state.status === 'in') this.setState(s => ({ tick: s.tick + 1 }));
+    }, 1000);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  flash(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this.toastT);
+    this.toastT = setTimeout(() => this.setState({ toast: null }), 2600);
+  }
+
+  clockNow() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  workingDays(from, to) {
+    const a = new Date(from), b = new Date(to);
+    if (isNaN(a) || isNaN(b) || b < a) return null;
+    let n = 0, holi = 0, wknd = 0;
+    for (let d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) {
+      const iso = d.toISOString().slice(0, 10);
+      if (d.getDay() === 0 || d.getDay() === 6) { wknd++; continue; }
+      if (HOLIDAY_ISO.indexOf(iso) >= 0) { holi++; continue; }
+      n++;
+    }
+    return { n, holi, wknd };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const radius = this.props.radius ?? 10;
+    const dist = s.dist;
+    const outOfRange = dist > radius;
+    const ang = -0.9;
+    const r = 18 + Math.min(dist / 40, 1) * 38;
+
+    const tabDefs = [
+      { key: 'home', label: 'Attendance', icon: 'M3 10.5 12 3l9 7.5V21H3z' },
+      { key: 'leave', label: 'Leave', icon: 'M8 2v4M16 2v4M3 9h18M5 5h14v16H5z' },
+      { key: 'pay', label: 'Payroll', icon: 'M2 7h20v10H2zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5' },
+      { key: 'me', label: 'Profile', icon: 'M20 21a8 8 0 0 0-16 0M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8' },
+    ];
+    const titles = { home: 'Attendance', leave: 'Leave', pay: 'Payroll', me: 'Profile' };
+
+    const elapsedSec = s.inTime ? Math.floor((Date.now() - s.inTime) / 1000) : 0;
+    const hh = String(Math.floor(elapsedSec / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((elapsedSec % 3600) / 60)).padStart(2, '0');
+    const ss = String(elapsedSec % 60).padStart(2, '0');
+
+    const inLabel = s.inTime ? new Date(s.inTime).toTimeString().slice(0, 5) : '––:––';
+    const outLabel = s.outTime ? new Date(s.outTime).toTimeString().slice(0, 5) : '––:––';
+    const workedMin = s.inTime && s.outTime ? Math.round((s.outTime - s.inTime) / 60000) : 0;
+
+    const wd = this.workingDays(s.form.from, s.form.to);
+    let calcNote = 'Choose a valid date range.';
+    if (wd) {
+      const parts = [];
+      if (wd.wknd) parts.push(wd.wknd + ' weekend day' + (wd.wknd > 1 ? 's' : ''));
+      if (wd.holi) parts.push(wd.holi + ' public holiday' + (wd.holi > 1 ? 's' : ''));
+      calcNote = parts.length ? 'Working days deducted, excluding ' + parts.join(' and ') + '.' : 'Working days deducted from your balance.';
+    }
+
+    const payIdx = s.payOpen;
+    const p = PAYSLIPS[payIdx == null ? 0 : payIdx];
+    const c = computePay(p);
+    const ink = 'var(--color-text)';
+    const mid = 'var(--color-neutral-700)';
+
+    return {
+      officeName: this.props.officeName ?? 'Mekong Trading Co.',
+      radius, dist,
+      distLabel: dist + ' m',
+      screenTitle: titles[s.tab],
+      todayLong: 'Tue 8 Sep 2026',
+      onDist: e => this.setState({ dist: Number(e.target.value) }),
+
+      dotX: 60 + Math.cos(ang) * r,
+      dotY: 60 + Math.sin(ang) * r,
+      outOfRange,
+      rangeLabel: outOfRange ? 'Outside radius' : 'Inside radius',
+      rangeTagClass: outOfRange ? 'tag-outline' : 'tag-accent',
+      ciOpacity: outOfRange ? 0.4 : 1,
+      coOpacity: outOfRange ? 0.4 : 1,
+      checkInLabel: outOfRange ? 'Move closer to check in' : 'Check in',
+      checkOutLabel: outOfRange ? 'Move closer to check out' : 'Check out',
+
+      isHome: s.tab === 'home', isLeave: s.tab === 'leave', isPay: s.tab === 'pay', isMe: s.tab === 'me',
+      isOut: s.status === 'out', isIn: s.status === 'in', isDone: s.status === 'done',
+      inTime: inLabel, elapsed: hh + ':' + mm + ':' + ss,
+      inCell: inLabel, outCell: outLabel,
+      hoursCell: workedMin ? Math.floor(workedMin / 60) + 'h ' + (workedMin % 60) + 'm' : (s.status === 'in' ? hh + ':' + mm : '––'),
+      workedTotal: Math.floor(workedMin / 60) + 'h ' + (workedMin % 60) + 'm',
+
+      onCheckIn: () => { if (outOfRange) return; this.setState({ status: 'in', inTime: Date.now(), tick: 0 }); this.flash('Checked in at ' + this.clockNow() + ' · ' + dist + ' m from office'); },
+      onCheckOut: () => { if (outOfRange) return; this.setState({ status: 'done', outTime: Date.now() }); this.flash('Checked out at ' + this.clockNow()); },
+      onReset: () => this.setState({ status: 'out', inTime: null, outTime: null }),
+
+      history: [
+        { day: 'Mon 7 Sep', span: '07:58 – 17:06', status: 'Present', cls: 'tag-neutral' },
+        { day: 'Fri 4 Sep', span: '08:24 – 17:02', status: 'Late 24m', cls: 'tag-accent' },
+        { day: 'Thu 3 Sep', span: '07:55 – 17:00', status: 'Present', cls: 'tag-neutral' },
+        { day: 'Wed 2 Sep', span: '08:01 – 17:12', status: 'Present', cls: 'tag-neutral' },
+      ],
+
+      tabs: tabDefs.map(t => ({
+        label: t.label, icon: t.icon,
+        color: s.tab === t.key ? 'var(--color-accent-800)' : 'var(--color-neutral-600)',
+        onClick: () => this.setState({ tab: t.key, payOpen: null }),
+      })),
+
+      leaveTabs: [['balance', 'Balance'], ['holidays', 'Holidays'], ['requests', 'Requests']].map(([k, l]) => ({
+        label: l,
+        color: s.leaveTab === k ? 'var(--color-accent-800)' : 'var(--color-neutral-700)',
+        line: s.leaveTab === k ? 'var(--color-accent)' : 'transparent',
+        onClick: () => this.setState({ leaveTab: k }),
+      })),
+      isBalance: s.leaveTab === 'balance', isHolidays: s.leaveTab === 'holidays', isRequests: s.leaveTab === 'requests',
+
+      balances: [
+        { name: 'Annual leave', total: 15, taken: 6, left: 9, pct: '40%', note: 'Labour Law minimum 15 days' },
+        { name: 'Sick leave', total: 30, taken: 1, left: 29, pct: '3%', note: 'Paid with a certificate' },
+        { name: 'Unpaid leave', total: 12, taken: 0, left: 12, pct: '0%', note: 'By agreement with the employer' },
+      ],
+      holidays: HOLIDAYS,
+      requests: s.requests,
+
+      applyOpen: s.applyOpen,
+      onOpenApply: () => this.setState({ applyOpen: true, error: null }),
+      onCloseApply: () => this.setState({ applyOpen: false }),
+      form: s.form,
+      typeOpts: TYPES.map(t => ({
+        label: t,
+        border: s.form.type === t ? 'var(--color-accent)' : 'var(--color-divider)',
+        bg: s.form.type === t ? 'var(--color-accent-100)' : 'transparent',
+        color: s.form.type === t ? 'var(--color-accent-800)' : 'var(--color-neutral-800)',
+        onClick: () => this.setState(st => ({ form: { ...st.form, type: t } })),
+      })),
+      onFrom: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, from: v } })); },
+      onTo: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, to: v } })); },
+      onReason: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, reason: v } })); },
+      calcDays: wd ? wd.n : '—',
+      calcNote,
+      hasError: !!s.error,
+      error: s.error,
+      onSubmit: () => {
+        if (!wd || wd.n === 0) { this.setState({ error: 'That range has no working days. Pick different dates.' }); return; }
+        if (s.form.type === 'Annual' && wd.n > 9) { this.setState({ error: 'Only 9 days of annual leave remain. Reduce the range or choose unpaid leave.' }); return; }
+        if (s.form.type === 'Sick' && !s.form.reason.trim()) { this.setState({ error: 'Sick leave needs a short reason; attach the certificate on approval.' }); return; }
+        const fmt = iso => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const req = {
+          type: s.form.type + ' leave',
+          range: s.form.from === s.form.to ? fmt(s.form.from) : fmt(s.form.from) + ' – ' + fmt(s.form.to),
+          days: wd.n + ' working day' + (wd.n > 1 ? 's' : ''),
+          status: 'Pending', cls: 'tag-outline',
+          reason: s.form.reason.trim() || 'No reason given',
+        };
+        this.setState(st => ({ requests: [req, ...st.requests], applyOpen: false, leaveTab: 'requests', error: null }));
+        this.flash('Leave request sent for approval');
+      },
+
+      payListOpen: s.payOpen == null,
+      payDetailOpen: s.payOpen != null,
+      latestNet: LAK(computePay(PAYSLIPS[0]).net),
+      onOpenLatest: () => this.setState({ payOpen: 0 }),
+      onClosePay: () => this.setState({ payOpen: null }),
+      payslips: PAYSLIPS.map((ps, i) => ({
+        period: ps.period, paid: ps.paid, net: LAK(computePay(ps).net),
+        onClick: () => this.setState({ payOpen: i }),
+      })),
+      payDetail: {
+        period: p.period,
+        net: LAK(c.net),
+        lines: [
+          { label: 'Basic salary', value: LAK(p.basic), color: ink, weight: '400' },
+          { label: 'Overtime', value: LAK(p.ot), color: ink, weight: '400' },
+          { label: 'Position allowance', value: LAK(p.allow), color: ink, weight: '400' },
+          { label: 'Gross pay', value: LAK(c.gross), color: ink, weight: '600' },
+          { label: 'Social security 5.5%', value: '−' + LAK(c.sso), color: mid, weight: '400' },
+          { label: 'Income tax', value: '−' + LAK(c.tax), color: mid, weight: '400' },
+        ],
+      },
+
+      settings: [['late', 'Remind me at 07:45'], ['payslip', 'Notify when payslip is ready'], ['holiday', 'Holiday notices']].map(([k, label]) => ({
+        label,
+        bg: s.toggles[k] ? 'var(--color-accent-200)' : 'var(--color-neutral-200)',
+        border: s.toggles[k] ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+        knob: s.toggles[k] ? '20px' : '2px',
+        onClick: () => this.setState(st => ({ toggles: { ...st.toggles, [k]: !st.toggles[k] } })),
+      })),
+
+      toastOpen: !!s.toast,
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

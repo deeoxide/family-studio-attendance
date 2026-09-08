@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/classical-ffe72c33-8600-4702-ab21-e7845c96a5a1/styles.css">
+<script src="_ds/classical-ffe72c33-8600-4702-ab21-e7845c96a5a1/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,400;0,500;0,600&family=Noto+Sans+Lao:wght@400;500;600&display=swap">
+<style>
+body { margin: 0; background: #f3f2f2; }
+a { color: var(--color-accent-700); text-underline-offset: 2px; }
+a:hover { color: var(--color-accent-800); }
+* { -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);font-family:var(--font-body);color:var(--color-text);padding:36px 20px 64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="max-width:700px;width:100%">
+    <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Family Studio · attendance, leave, payroll</div>
+    <h1 style="font-family:var(--font-heading);font-weight:400;font-size:38px;line-height:1.1;margin:8px 0 12px">One app, three roles, two languages</h1>
+    <p style="margin:0;font-size:14px;line-height:1.75;text-align:justify;color:var(--color-neutral-800);max-width:60ch">Check-in is gated on a 10 metre geofence read as a plain distance meter — no map to load, no map to misread. Clock in at 09:00 with a 30 minute grace, lunch 12:00 to 13:30, out at 18:00, Monday to Friday. Leave is annual, sick and personal, counted in working days against the holiday notice of the Ministry of Labour and Social Welfare. Managers approve; HR runs payroll and keeps the holiday list.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+      <span class="tag tag-outline">White ground ≈ 90%</span>
+      <span class="tag tag-accent">Gold accent ≈ 7%</span>
+      <span class="tag tag-neutral">Ink ≈ 3%</span>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:18px;padding:12px 18px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:#fff;box-shadow:var(--shadow-sm);flex-wrap:wrap;justify-content:center">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-700)">Role</span>
+      <div style="display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+        <sc-for list="{{ roleOpts }}" as="r" hint-placeholder-count="3">
+          <button onClick="{{ r.onClick }}" style="min-height:36px;padding:0 13px;border:none;border-left:1px solid var(--color-divider);background:{{ r.bg }};color:{{ r.color }};font-family:var(--font-body);font-size:12px;cursor:pointer">{{ r.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-700)">Distance</span>
+      <input type="range" min="0" max="40" step="1" value="{{ dist }}" onInput="{{ onDist }}" style="width:130px;accent-color:var(--color-accent);height:24px" />
+      <span style="font-family:var(--font-heading);font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;min-width:46px;text-align:right">{{ distLabel }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-700)">Late days</span>
+      <input type="range" min="0" max="18" step="1" value="{{ lateN }}" onInput="{{ onLateN }}" style="width:130px;accent-color:var(--color-accent);height:24px" />
+      <span style="font-family:var(--font-heading);font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;min-width:26px;text-align:right">{{ lateN }}</span>
+    </div>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 402 }}" height="{{ 874 }}" hint-size="402px,874px">
+
+    <div style="height:100%;display:flex;flex-direction:column;background:#ffffff;font-family:{{ fontStack }};color:var(--color-text)">
+
+      <div style="padding:56px 20px 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--color-divider);flex:none">
+        <div style="min-width:0">
+          <div style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">{{ roleLabel }}</div>
+          <div style="font-family:{{ headFont }};font-weight:600;font-size:23px;line-height:1.2;margin-top:3px">{{ screenTitle }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;flex:none">
+          <div style="display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+            <sc-for list="{{ langOpts }}" as="l" hint-placeholder-count="2">
+              <button onClick="{{ l.onClick }}" style="min-height:34px;min-width:38px;border:none;border-left:1px solid var(--color-divider);background:{{ l.bg }};color:{{ l.color }};font-family:{{ fontStack }};font-size:11.5px;cursor:pointer">{{ l.label }}</button>
+            </sc-for>
+          </div>
+          <div style="width:36px;height:36px;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-neutral-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:600;font-size:13px;color:var(--color-neutral-800)">{{ initials }}</div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;overflow-x:hidden">
+
+        <sc-if value="{{ scAtt }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="Attendance" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px 16px;display:flex;flex-direction:column;gap:15px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700)">{{ t.locCheck }}</div>
+              <span class="tag {{ rangeTagClass }}" style="font-size:10px">{{ rangeLabel }}</span>
+            </div>
+
+            <div>
+              <div style="display:flex;align-items:baseline;gap:7px">
+                <span style="font-family:var(--font-heading);font-weight:400;font-size:46px;line-height:1;font-variant-numeric:tabular-nums;color:{{ distColor }}">{{ dist }}</span>
+                <span style="font-size:13px;color:var(--color-neutral-700)">{{ t.metresFrom }}</span>
+              </div>
+              <div style="position:relative;height:34px;margin-top:14px">
+                <div style="position:absolute;left:0;right:0;top:15px;height:3px;background:var(--color-neutral-200);border-radius:99px"></div>
+                <div style="position:absolute;left:0;width:25%;top:15px;height:3px;background:var(--color-accent);border-radius:99px"></div>
+                <div style="position:absolute;left:25%;top:8px;width:1px;height:17px;background:var(--color-neutral-400)"></div>
+                <div style="position:absolute;left:{{ markerPct }};top:8px;transform:translateX(-50%);width:3px;height:17px;background:var(--color-neutral-900);border-radius:2px"></div>
+                <div style="position:absolute;left:0;bottom:0;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">0 m</div>
+                <div style="position:absolute;left:25%;bottom:0;transform:translateX(-50%);font-size:10px;color:var(--color-accent-700);font-variant-numeric:tabular-nums;white-space:nowrap">{{ radius }} m</div>
+                <div style="position:absolute;right:0;bottom:0;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">40 m</div>
+              </div>
+              <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:11px;line-height:1.55">{{ t.gpsNote }}</div>
+            </div>
+
+            <sc-if value="{{ isOut }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ onCheckIn }}" disabled="{{ outOfRange }}" style="width:100%;min-height:54px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:{{ headFont }};font-weight:600;font-size:17px;cursor:pointer;opacity:{{ ciOpacity }}" style-hover="background:var(--color-accent-200)" style-active="background:var(--color-accent-300)">{{ checkInLabel }}</button>
+            </sc-if>
+
+            <sc-if value="{{ isIn }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--color-accent-200);background:var(--color-accent-100);border-radius:var(--radius-md)">
+                <div style="font-size:12px;color:var(--color-accent-800);line-height:1.5">{{ sinceLabel }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;color:var(--color-accent-800);flex:none">{{ elapsed }}</div>
+              </div>
+              <button onClick="{{ onCheckOut }}" disabled="{{ outOfRange }}" style="width:100%;min-height:54px;border:1.5px solid var(--color-neutral-900);border-radius:var(--radius-md);background:#fff;color:var(--color-neutral-900);font-family:{{ headFont }};font-weight:600;font-size:17px;cursor:pointer;opacity:{{ coOpacity }}" style-hover="background:var(--color-neutral-100)">{{ checkOutLabel }}</button>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isDone }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--color-divider);border-radius:var(--radius-md)">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent-700)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                <div style="font-size:12.5px;line-height:1.5">{{ doneLabel }}</div>
+              </div>
+              <button onClick="{{ onReset }}" style="align-self:flex-start;min-height:44px;padding:0 4px;border:none;background:none;color:var(--color-accent-700);font-family:{{ fontStack }};font-size:12.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer">{{ t.resetDay }}</button>
+            </div>
+            </sc-if>
+          </div>
+
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md)">
+            <div style="padding:13px 16px;border-bottom:1px solid var(--color-divider);display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700)">{{ t.today }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ todayLong }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr">
+              <div style="padding:14px 14px;border-right:1px solid var(--color-divider)">
+                <div style="font-size:10px;color:var(--color-neutral-700);letter-spacing:.05em">{{ t.inShort }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;margin-top:3px">{{ inCell }}</div>
+              </div>
+              <div style="padding:14px 14px;border-right:1px solid var(--color-divider)">
+                <div style="font-size:10px;color:var(--color-neutral-700);letter-spacing:.05em">{{ t.outShort }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;margin-top:3px">{{ outCell }}</div>
+              </div>
+              <div style="padding:14px 14px">
+                <div style="font-size:10px;color:var(--color-neutral-700);letter-spacing:.05em">{{ t.hours }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;font-variant-numeric:tabular-nums;margin-top:3px">{{ hoursCell }}</div>
+              </div>
+            </div>
+            <div style="padding:11px 16px;border-top:1px solid var(--color-divider);font-size:11px;color:var(--color-neutral-700);line-height:1.55">{{ t.shiftNote }}</div>
+          </div>
+
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px">
+              <div style="font-family:{{ headFont }};font-weight:600;font-size:15px">{{ t.thisMonth }}</div>
+              <span style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">1–8 Sep 2026</span>
+            </div>
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);display:grid;grid-template-columns:1fr 1fr 1fr;overflow:hidden">
+              <div style="padding:14px 8px;text-align:center;border-right:1px solid var(--color-divider)">
+                <div style="font-family:var(--font-heading);font-weight:400;font-size:28px;line-height:1;font-variant-numeric:tabular-nums">{{ monPresent }}</div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.present }}</div>
+              </div>
+              <div style="padding:14px 8px;text-align:center;border-right:1px solid var(--color-divider)">
+                <div style="font-family:var(--font-heading);font-weight:400;font-size:28px;line-height:1;font-variant-numeric:tabular-nums;color:var(--color-accent-700)">{{ lateN }}</div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.late }}</div>
+              </div>
+              <div style="padding:14px 8px;text-align:center">
+                <div style="font-family:var(--font-heading);font-weight:400;font-size:28px;line-height:1;font-variant-numeric:tabular-nums">1</div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.onLeave }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid {{ punctBorder }};border-radius:var(--radius-md);background:{{ punctBg }}">
+            <div style="padding:15px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div style="min-width:0">
+                <div style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:{{ punctKicker }}">{{ t.punctuality }}</div>
+                <div style="font-family:{{ headFont }};font-weight:600;font-size:17px;margin-top:5px;line-height:1.3;color:{{ punctInk }}">{{ punctHeadline }}</div>
+                <div style="font-size:11.5px;line-height:1.6;margin-top:5px;color:{{ punctBody }}">{{ punctNote }}</div>
+              </div>
+              <div style="flex:none;text-align:right">
+                <div style="font-family:var(--font-heading);font-weight:400;font-size:34px;line-height:1;font-variant-numeric:tabular-nums;color:{{ punctInk }}">{{ lateN }}</div>
+                <div style="font-size:10px;color:{{ punctBody }};margin-top:3px">{{ t.lateDays }}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:5px;padding:0 16px 14px">
+              <sc-for list="{{ lateTicks }}" as="k" hint-placeholder-count="15">
+                <div style="flex:1;height:5px;border-radius:99px;background:{{ k.bg }}"></div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ hasLateDeduct }}">
+            <div style="border-top:1px solid {{ punctBorder }};padding:13px 16px;display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+              <div style="font-size:11.5px;color:{{ punctBody }};line-height:1.5">{{ t.lateDeduction }} · {{ t.september }}</div>
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums;color:{{ punctInk }};flex:none">−{{ lateDeductTotal }}</div>
+            </div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ lateN }}">
+          <div>
+            <div style="font-family:{{ headFont }};font-weight:600;font-size:15px;margin-bottom:8px">{{ t.lateBreakdown }}</div>
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+              <sc-for list="{{ lateRows }}" as="ld" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid var(--color-divider)">
+                  <div style="min-width:0">
+                    <div style="font-size:13px">{{ ld.day }}</div>
+                    <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px;font-variant-numeric:tabular-nums">{{ ld.detail }}</div>
+                  </div>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:13.5px;font-variant-numeric:tabular-nums;color:{{ ld.color }};flex:none;text-align:right">{{ ld.amount }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <p style="margin:9px 0 0;font-size:11px;line-height:1.7;color:var(--color-neutral-700);text-align:justify">{{ t.lateRule }}</p>
+          </div>
+          </sc-if>
+
+          <div>
+            <div style="font-family:{{ headFont }};font-weight:600;font-size:15px;margin-bottom:8px">{{ t.recentDays }}</div>
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+              <sc-for list="{{ history }}" as="row" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid var(--color-divider)">
+                  <div style="min-width:0">
+                    <div style="font-size:13px">{{ row.day }}</div>
+                    <div style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums;margin-top:2px">{{ row.span }}</div>
+                  </div>
+                  <span class="tag {{ row.cls }}" style="font-size:10px;flex:none">{{ row.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ scLeave }}">
+        <div data-screen-label="Leave" style="padding:0 0 28px">
+
+          <div style="display:flex;border-bottom:1px solid var(--color-divider);position:sticky;top:0;background:#fff;z-index:2">
+            <sc-for list="{{ leaveTabs }}" as="lt" hint-placeholder-count="3">
+              <button onClick="{{ lt.onClick }}" style="flex:1;min-height:46px;border:none;background:none;font-family:{{ fontStack }};font-size:12.5px;cursor:pointer;color:{{ lt.color }};border-bottom:2px solid {{ lt.line }}">{{ lt.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+
+            <sc-if value="{{ isBalance }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ balances }}" as="b" hint-placeholder-count="3">
+                <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:15px 16px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                    <div style="font-family:{{ headFont }};font-weight:600;font-size:15px">{{ b.name }}</div>
+                    <div style="font-size:11.5px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums;flex:none">{{ b.used }}</div>
+                  </div>
+                  <div style="height:6px;background:var(--color-neutral-200);border-radius:99px;margin:11px 0 9px;overflow:hidden">
+                    <div style="height:100%;width:{{ b.pct }};background:var(--color-accent)"></div>
+                  </div>
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                    <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.5">{{ b.note }}</div>
+                    <div style="font-family:var(--font-heading);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums;color:var(--color-accent-800);flex:none">{{ b.left }}</div>
+                  </div>
+                </div>
+              </sc-for>
+              <button onClick="{{ onOpenApply }}" style="width:100%;min-height:54px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:{{ headFont }};font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--color-accent-200)">{{ t.applyLeave }}</button>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isHolidays }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="border:1px solid var(--color-accent-200);background:var(--color-accent-100);border-radius:var(--radius-md);padding:15px 16px">
+                <div style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-800)">{{ t.nextHoliday }}</div>
+                <div style="font-family:{{ headFont }};font-weight:600;font-size:21px;margin-top:5px;color:var(--color-accent-900);line-height:1.25">{{ nextHolidayName }}</div>
+                <div style="font-size:12px;color:var(--color-accent-800);margin-top:4px;font-variant-numeric:tabular-nums">{{ nextHolidayWhen }}</div>
+              </div>
+              <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+                <div style="padding:12px 16px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-divider)">{{ t.holidays2026 }}</div>
+                <sc-for list="{{ holidays }}" as="h" hint-placeholder-count="5">
+                  <div style="display:flex;gap:13px;padding:13px 16px;border-bottom:1px solid var(--color-divider)">
+                    <div style="width:68px;flex:none;font-family:var(--font-heading);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums;color:var(--color-accent-700)">{{ h.date }}</div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:13px;line-height:1.4">{{ h.name }}</div>
+                      <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px">{{ h.note }}</div>
+                    </div>
+                    <div style="font-size:11px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums;flex:none">{{ h.days }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:11px;line-height:1.7;color:var(--color-neutral-700);text-align:justify">{{ t.holidayNote }}</p>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isRequests }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ requests }}" as="r" hint-placeholder-count="3">
+                <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:14px 16px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                    <div style="font-family:{{ headFont }};font-weight:600;font-size:15px">{{ r.typeLabel }}</div>
+                    <span class="tag {{ r.cls }}" style="font-size:10px;flex:none">{{ r.statusLabel }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--color-neutral-800);margin-top:6px;font-variant-numeric:tabular-nums">{{ r.range }} · {{ r.daysLabel }}</div>
+                  <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:4px;line-height:1.5">{{ r.reason }}</div>
+                </div>
+              </sc-for>
+              <button onClick="{{ onOpenApply }}" style="width:100%;min-height:54px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:{{ headFont }};font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--color-accent-200)">{{ t.applyLeave }}</button>
+            </div>
+            </sc-if>
+
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ scPay }}">
+        <div data-screen-label="Payroll" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+
+          <sc-if value="{{ payListOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px 16px">
+              <div style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700)">{{ latestLabel }}</div>
+              <div style="display:flex;align-items:baseline;gap:7px;margin-top:8px">
+                <span style="font-family:var(--font-heading);font-weight:400;font-size:36px;line-height:1;font-variant-numeric:tabular-nums">{{ latestNet }}</span>
+                <span style="font-size:14px;color:var(--color-neutral-700)">LAK</span>
+              </div>
+              <div style="height:1px;background:var(--color-divider);margin:14px 0"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.55">{{ paidLine }}</div>
+                <button onClick="{{ onOpenLatest }}" style="min-height:44px;padding:0 15px;border:1px solid var(--color-accent);border-radius:var(--radius-md);background:none;color:var(--color-accent-800);font-family:{{ fontStack }};font-size:12.5px;cursor:pointer;flex:none" style-hover="background:var(--color-accent-100)">{{ t.viewPayslip }}</button>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-family:{{ headFont }};font-weight:600;font-size:15px;margin-bottom:8px">{{ t.earlierPayslips }}</div>
+              <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+                <sc-for list="{{ payslips }}" as="p" hint-placeholder-count="4">
+                  <button onClick="{{ p.onClick }}" style="width:100%;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border:none;border-top:1px solid var(--color-divider);background:none;font-family:{{ fontStack }};cursor:pointer;text-align:left" style-hover="background:var(--color-neutral-100)">
+                    <div style="min-width:0">
+                      <div style="font-size:13px">{{ p.period }}</div>
+                      <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px;font-variant-numeric:tabular-nums">{{ p.paidShort }}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex:none">
+                      <span style="font-family:var(--font-heading);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums">{{ p.net }}</span>
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--color-neutral-500)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ payDetailOpen }}">
+          <div style="display:flex;flex-direction:column;gap:15px">
+            <button onClick="{{ onClosePay }}" style="align-self:flex-start;min-height:44px;display:flex;align-items:center;gap:6px;border:none;background:none;padding:0;color:var(--color-accent-700);font-family:{{ fontStack }};font-size:12.5px;cursor:pointer">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+              {{ t.allPayslips }}
+            </button>
+            <div>
+              <div style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">{{ t.payslip }}</div>
+              <div style="font-family:{{ headFont }};font-weight:600;font-size:24px;margin-top:4px">{{ payDetail.period }}</div>
+              <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:3px">{{ payDetail.who }}</div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+              <tbody>
+                <sc-for list="{{ payDetail.lines }}" as="l" hint-placeholder-count="6">
+                  <tr>
+                    <td style="padding:11px 0;border-bottom:1px solid var(--color-divider);color:{{ l.color }};font-weight:{{ l.weight }}">{{ l.label }}</td>
+                    <td style="padding:11px 0;border-bottom:1px solid var(--color-divider);text-align:right;font-variant-numeric:tabular-nums;color:{{ l.color }};font-weight:{{ l.weight }}">{{ l.value }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <sc-if value="{{ payShowLate }}">
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+              <div style="padding:12px 16px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-divider)">{{ t.lateBreakdown }}</div>
+              <sc-for list="{{ lateRows }}" as="pl" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;border-bottom:1px solid var(--color-divider);font-size:12px">
+                  <div style="min-width:0;font-variant-numeric:tabular-nums">{{ pl.day }} · {{ pl.detail }}</div>
+                  <div style="font-variant-numeric:tabular-nums;color:{{ pl.color }};flex:none">{{ pl.amount }}</div>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <div style="border:1px solid var(--color-accent-200);background:var(--color-accent-100);border-radius:var(--radius-md);padding:15px 16px;display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+              <div style="font-family:{{ headFont }};font-weight:600;font-size:15px;color:var(--color-accent-900)">{{ t.netPay }}</div>
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums;color:var(--color-accent-900)">{{ payDetail.net }}</div>
+            </div>
+            <p style="margin:0;font-size:11px;line-height:1.7;color:var(--color-neutral-700);text-align:justify">{{ t.payNote }}</p>
+          </div>
+          </sc-if>
+
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ scTeam }}">
+        <div data-screen-label="Team today" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);display:grid;grid-template-columns:1fr 1fr 1fr;overflow:hidden">
+            <div style="padding:15px 8px;text-align:center;border-right:1px solid var(--color-divider)">
+              <div style="font-family:var(--font-heading);font-weight:400;font-size:30px;line-height:1;font-variant-numeric:tabular-nums">4</div>
+              <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.present }}</div>
+            </div>
+            <div style="padding:15px 8px;text-align:center;border-right:1px solid var(--color-divider)">
+              <div style="font-family:var(--font-heading);font-weight:400;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;color:var(--color-accent-700)">1</div>
+              <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.late }}</div>
+            </div>
+            <div style="padding:15px 8px;text-align:center">
+              <div style="font-family:var(--font-heading);font-weight:400;font-size:30px;line-height:1;font-variant-numeric:tabular-nums">1</div>
+              <div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.onLeave }}</div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px">
+              <div style="font-family:{{ headFont }};font-weight:600;font-size:15px">{{ t.rollToday }}</div>
+              <span style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ todayLong }}</span>
+            </div>
+            <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+              <sc-for list="{{ team }}" as="m" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--color-divider)">
+                  <div style="width:34px;height:34px;flex:none;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-neutral-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:600;font-size:12px;color:var(--color-neutral-800)">{{ m.ini }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px">{{ m.name }}</div>
+                    <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px;font-variant-numeric:tabular-nums">{{ m.detail }}</div>
+                  </div>
+                  <span class="tag {{ m.cls }}" style="font-size:10px;flex:none">{{ m.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ scAppr }}">
+        <div data-screen-label="Approvals" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:14px">
+          <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="font-size:11.5px;color:var(--color-neutral-700)">{{ pendingCount }}</div>
+            <sc-for list="{{ pending }}" as="q" hint-placeholder-count="2">
+              <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:15px 16px;display:flex;flex-direction:column;gap:11px">
+                <div style="display:flex;align-items:center;gap:11px">
+                  <div style="width:34px;height:34px;flex:none;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-neutral-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:600;font-size:12px;color:var(--color-neutral-800)">{{ q.ini }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13.5px">{{ q.name }}</div>
+                    <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px">{{ q.typeLabel }}</div>
+                  </div>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:20px;font-variant-numeric:tabular-nums;flex:none">{{ q.days }}</div>
+                </div>
+                <div style="font-size:12px;color:var(--color-neutral-800);font-variant-numeric:tabular-nums">{{ q.range }}</div>
+                <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.55">{{ q.reason }}</div>
+                <div style="display:flex;gap:9px;margin-top:2px">
+                  <button onClick="{{ q.onApprove }}" style="flex:1;min-height:46px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:{{ headFont }};font-weight:600;font-size:14px;cursor:pointer" style-hover="background:var(--color-accent-200)">{{ t.approve }}</button>
+                  <button onClick="{{ q.onReject }}" style="flex:1;min-height:46px;border:1px solid var(--color-neutral-300);border-radius:var(--radius-md);background:none;color:var(--color-neutral-800);font-family:{{ fontStack }};font-size:13px;cursor:pointer" style-hover="background:var(--color-neutral-100)">{{ t.reject }}</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+          <sc-if value="{{ noPending }}">
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:34px 20px;text-align:center">
+            <div style="font-family:{{ headFont }};font-weight:600;font-size:17px">{{ t.allClear }}</div>
+            <div style="font-size:12px;color:var(--color-neutral-700);margin-top:6px;line-height:1.6">{{ t.allClearNote }}</div>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ scRun }}">
+        <div data-screen-label="Payroll run" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px 16px">
+            <div style="font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700)">{{ t.periodOpen }}</div>
+            <div style="font-family:{{ headFont }};font-weight:600;font-size:22px;margin-top:5px">{{ t.september }}</div>
+            <div style="display:flex;align-items:baseline;gap:7px;margin-top:12px">
+              <span style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1;font-variant-numeric:tabular-nums">{{ runTotal }}</span>
+              <span style="font-size:13px;color:var(--color-neutral-700)">LAK</span>
+            </div>
+            <div style="height:1px;background:var(--color-divider);margin:14px 0"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700)">{{ t.headcount }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px">6</div>
+              </div>
+              <div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700)">{{ t.ssoTotal }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px">{{ runSso }}</div>
+              </div>
+              <div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700)">{{ t.taxTotal }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px">{{ runTax }}</div>
+              </div>
+              <div>
+                <div style="font-size:10.5px;color:var(--color-neutral-700)">{{ t.otHours }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px">18</div>
+              </div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+            <div style="padding:12px 16px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-divider)">{{ t.perPerson }}</div>
+            <sc-for list="{{ runRows }}" as="e" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-divider)">
+                <div style="min-width:0">
+                  <div style="font-size:13px">{{ e.name }}</div>
+                  <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px;font-variant-numeric:tabular-nums">{{ e.meta }}</div>
+                </div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;flex:none">{{ e.net }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ onApproveRun }}" style="width:100%;min-height:54px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:{{ headFont }};font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--color-accent-200)">{{ runBtnLabel }}</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ scPeople }}">
+        <div data-screen-label="People" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:14px">
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+            <sc-for list="{{ people }}" as="pp" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--color-divider)">
+                <div style="width:34px;height:34px;flex:none;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-neutral-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:600;font-size:12px;color:var(--color-neutral-800)">{{ pp.ini }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px">{{ pp.name }}</div>
+                  <div style="font-size:11px;color:var(--color-neutral-700);margin-top:2px">{{ pp.role }}</div>
+                </div>
+                <div style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums;flex:none">{{ pp.leaveLeft }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:11px;line-height:1.7;color:var(--color-neutral-700);text-align:justify">{{ t.peopleNote }}</p>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ scMe }}">
+        <div data-screen-label="Profile" style="padding:18px 20px 28px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--color-divider)">
+            <div style="width:56px;height:56px;flex:none;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-neutral-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:600;font-size:19px;color:var(--color-neutral-800)">{{ initials }}</div>
+            <div style="min-width:0">
+              <div style="font-family:{{ headFont }};font-weight:600;font-size:19px">{{ meName }}</div>
+              <div style="font-size:12px;color:var(--color-neutral-700);margin-top:2px">{{ meRole }}</div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+            <div style="padding:12px 16px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-divider)">{{ t.workplace }}</div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:7px">
+              <div style="font-size:13px">Family Studio</div>
+              <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.6">{{ t.address }}<br /><span style="font-variant-numeric:tabular-nums">17.9757° N, 102.6331° E · {{ radiusLine }}</span></div>
+              <div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.6;font-variant-numeric:tabular-nums">{{ t.shiftNote }}</div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--color-divider)">
+              <div style="font-size:13px">{{ t.language }}</div>
+              <div style="display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden;flex:none">
+                <sc-for list="{{ langOpts }}" as="l2" hint-placeholder-count="2">
+                  <button onClick="{{ l2.onClick }}" style="min-height:38px;min-width:52px;border:none;border-left:1px solid var(--color-divider);background:{{ l2.bg }};color:{{ l2.color }};font-family:{{ fontStack }};font-size:12px;cursor:pointer">{{ l2.long }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <sc-for list="{{ settings }}" as="st" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--color-divider)">
+                <div style="font-size:13px;line-height:1.45">{{ st.label }}</div>
+                <button onClick="{{ st.onClick }}" style="width:44px;height:26px;flex:none;border-radius:99px;border:1px solid {{ st.border }};background:{{ st.bg }};position:relative;cursor:pointer;padding:0">
+                  <span style="position:absolute;top:2px;left:{{ st.knob }};width:20px;height:20px;border-radius:50%;background:#fff;border:1px solid {{ st.border }};transition:left .16s ease"></span>
+                </button>
+              </div>
+            </sc-for>
+          </div>
+          <button style="width:100%;min-height:48px;border:1px solid var(--color-neutral-300);border-radius:var(--radius-md);background:none;font-family:{{ fontStack }};font-size:13px;color:var(--color-neutral-800);cursor:pointer" style-hover="background:var(--color-neutral-100)">{{ t.signOut }}</button>
+        </div>
+        </sc-if>
+
+      </div>
+
+      <div style="flex:none;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-top:1px solid var(--color-divider);padding-bottom:22px;background:#fff">
+        <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+          <button onClick="{{ tb.onClick }}" style="min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:none;background:none;cursor:pointer;color:{{ tb.color }};font-family:{{ fontStack }};padding:8px 2px 4px">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{ tb.icon }}"></path></svg>
+            <span style="font-size:10px;letter-spacing:.03em;text-align:center;line-height:1.2">{{ tb.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ applyOpen }}">
+      <div style="position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;justify-content:flex-end">
+        <div onClick="{{ onCloseApply }}" style="position:absolute;inset:0;background:rgba(32,31,29,.32)"></div>
+        <div style="position:relative;background:#fff;border-top-left-radius:14px;border-top-right-radius:14px;box-shadow:var(--shadow-lg);padding:20px 20px 30px;display:flex;flex-direction:column;gap:14px;max-height:80%;overflow-y:auto">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+            <div style="font-family:{{ headFont }};font-weight:600;font-size:20px">{{ t.applyLeave }}</div>
+            <button onClick="{{ onCloseApply }}" style="min-height:44px;min-width:44px;border:none;background:none;cursor:pointer;color:var(--color-neutral-700);font-size:18px">×</button>
+          </div>
+
+          <div>
+            <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">{{ t.type }}</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:7px">
+              <sc-for list="{{ typeOpts }}" as="o" hint-placeholder-count="3">
+                <button onClick="{{ o.onClick }}" style="min-height:44px;padding:0 14px;border:1px solid {{ o.border }};border-radius:var(--radius-md);background:{{ o.bg }};color:{{ o.color }};font-family:{{ fontStack }};font-size:12.5px;cursor:pointer">{{ o.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px">
+            <div style="flex:1;min-width:0">
+              <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">{{ t.from }}</label>
+              <input class="input" type="date" value="{{ form.from }}" onChange="{{ onFrom }}" style="width:100%;min-height:46px;box-sizing:border-box;margin-top:6px" />
+            </div>
+            <div style="flex:1;min-width:0">
+              <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">{{ t.to }}</label>
+              <input class="input" type="date" value="{{ form.to }}" onChange="{{ onTo }}" style="width:100%;min-height:46px;box-sizing:border-box;margin-top:6px" />
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-neutral-100)">
+            <div style="font-size:11.5px;line-height:1.55;color:var(--color-neutral-800)">{{ calcNote }}</div>
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums;flex:none">{{ calcDays }}</div>
+          </div>
+
+          <div>
+            <label style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">{{ t.reason }}</label>
+            <textarea class="input" rows="2" value="{{ form.reason }}" onChange="{{ onReason }}" style="width:100%;box-sizing:border-box;margin-top:6px;font-family:{{ fontStack }};resize:none"></textarea>
+          </div>
+
+          <sc-if value="{{ hasError }}">
+          <div style="font-size:11.5px;color:var(--color-accent-800);border-left:2px solid var(--color-accent);padding-left:10px;line-height:1.55">{{ error }}</div>
+          </sc-if>
+
+          <button onClick="{{ onSubmit }}" style="width:100%;min-height:54px;border:1.5px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);color:var(--color-accent-800);font-family:{{ headFont }};font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--color-accent-200)">{{ t.sendApproval }}</button>
+          <div style="font-size:11px;color:var(--color-neutral-700);text-align:center;line-height:1.55">{{ t.approverNote }}</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ toastOpen }}">
+      <div style="position:absolute;left:20px;right:20px;bottom:96px;z-index:90;display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--color-neutral-900);color:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-md)">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--color-accent-300)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+        <span style="font-size:12.5px;line-height:1.45">{{ toast }}</span>
+      </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+
+  <div style="max-width:700px;width:100%">
+    <div class="hr" style="margin:0 0 18px"></div>
+    <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;margin-bottom:8px">Notes and next steps</div>
+    <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.85;color:var(--color-neutral-800)">
+      <li>The Lao copy is my own translation of the interface strings — please have someone read it before it ships.</li>
+      <li>Lunch 12:00–13:30 is deducted from the day total automatically; the running timer shows time on site.</li>
+      <li>Personal leave is set to 5 days a year, on top of the Labour Law annual 15 and sick 30.</li>
+      <li>Approve or reject in the Manager role and the request updates in the Employee role.</li>
+      <li>Late rule as built: days 1–3 give a warning letter only; from day 4 each started hour after 09:30 costs 10,000 LAK; arriving more than two hours late (your 11:50 case) leaves the day unpaid at basic ÷ 22; 15 late days brings the month to half basic salary. Move the “Late days” slider to see each threshold.</li>
+      <li>Next: offline check-in queued on weak signal, and a monthly attendance export for HR.</li>
+    </ul>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;radius&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:10,&quot;min&quot;:5,&quot;max&quot;:100,&quot;unit&quot;:&quot;m&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+const LAK = n => n.toLocaleString('en-US');
+
+const D = {
+  en: {
+    locCheck: 'Location check', metresFrom: 'metres from the studio',
+    inside: 'Inside radius', outside: 'Outside radius',
+    gpsNote: 'GPS accuracy ±3 m. Check-in is recorded with the distance.',
+    checkIn: 'Check in', checkOut: 'Check out',
+    tooFarIn: 'Move closer to check in', tooFarOut: 'Move closer to check out',
+    today: 'Today', inShort: 'IN', outShort: 'OUT', hours: 'HOURS',
+    shiftNote: 'Shift 09:00 – 18:00 · lunch 12:00 – 13:30 · late after 09:30 · Mon to Fri',
+    thisMonth: 'This month', present: 'Present', late: 'Late', onLeave: 'On leave',
+    recentDays: 'Recent days', resetDay: 'Reset the demo day',
+    balance: 'Balance', holidays: 'Holidays', requests: 'Requests',
+    applyLeave: 'Apply for leave', nextHoliday: 'Next public holiday',
+    holidays2026: 'Official holidays 2026',
+    holidayNote: 'Holidays follow the annual notice of the Ministry of Labour and Social Welfare. Leave requests never consume a public holiday or a weekend.',
+    annual: 'Annual leave', sick: 'Sick leave', personal: 'Personal leave',
+    annualNote: 'Labour Law minimum 15 days', sickNote: 'Paid with a certificate', personalNote: 'Studio policy, 5 days a year',
+    type: 'Type', from: 'From', to: 'To', reason: 'Reason',
+    sendApproval: 'Send for approval', approverNote: 'Your balance updates when the request is approved.',
+    viewPayslip: 'View payslip', earlierPayslips: 'Earlier payslips', allPayslips: 'All payslips',
+    payslip: 'Payslip', netPay: 'Net pay',
+    payNote: 'Social security is withheld at 5.5% of the contributory wage. Income tax uses the progressive monthly bands. Overtime comes from the approved attendance records.',
+    basic: 'Basic salary', ot: 'Overtime', allow: 'Position allowance', gross: 'Gross pay',
+    sso: 'Social security 5.5%', tax: 'Income tax',
+    netFor: 'Net pay', paid: 'Paid',
+    rollToday: 'Roll call', approve: 'Approve', reject: 'Reject',
+    allClear: 'Nothing to approve', allClearNote: 'New leave requests appear here as soon as they are sent.',
+    periodOpen: 'Open period', september: 'September 2026',
+    headcount: 'Headcount', ssoTotal: 'Social security', taxTotal: 'Income tax', otHours: 'Overtime hours',
+    perPerson: 'Per person', approveRun: 'Approve the payroll run', runApproved: 'Payroll run approved',
+    workplace: 'Registered workplace', address: 'Ban Phonthan, Saysettha, Vientiane',
+    language: 'Language', signOut: 'Sign out',
+    peopleNote: 'HR can adjust entitlements, the shift window and the geofence radius per person from this list.',
+    tabAtt: 'Attendance', tabLeave: 'Leave', tabPay: 'Payroll', tabMe: 'Profile',
+    tabTeam: 'Team', tabAppr: 'Approvals', tabRun: 'Payroll run', tabPeople: 'People',
+    roleEmp: 'Employee', roleMgr: 'Manager', roleHr: 'HR / Admin',
+    pending: 'Pending', approved: 'Approved', rejected: 'Rejected',
+    workingDays: 'working days', workingDay: 'working day',
+    set: { late: 'Remind me at 08:45', payslip: 'Notify when the payslip is ready', holiday: 'Holiday notices' },
+    noReason: 'No reason given',
+    punctuality: 'Punctuality this month', lateDays: 'late days',
+    punctClear: 'On time', punctWarned: 'Warning letter issued', punctDeduct: 'Deduction applies', punctHalf: 'Half salary this month',
+    punctClearNote: 'A warning letter is issued at the third late day. Late means after 09:30.',
+    punctWarnedNote: 'Three late days this month. A warning letter has been issued; no money is deducted yet.',
+    punctDeductNote: 'Past three late days, every hour after 09:30 costs 10,000 LAK.',
+    punctHalfNote: 'Fifteen late days or more — the month is paid at half salary.',
+    lateDeduction: 'Late deduction',
+    lateBreakdown: 'Late days and deductions',
+    lateRule: 'The first three late days of the month carry a warning letter only. From the fourth, each started hour after 09:30 is deducted at 10,000 LAK. Arriving more than two hours late leaves the day unpaid, and fifteen late days in one month bring the month to half salary.',
+    arrived: 'in', noDeduct: 'warning only', unpaidDay: 'day unpaid',
+    basicHalf: 'Basic salary (half — 15 late days)',
+  },
+  lo: {
+    locCheck: 'ກວດສອບສະຖານທີ່', metresFrom: 'ແມັດ ຈາກສະຕູດິໂອ',
+    inside: 'ຢູ່ໃນເຂດ', outside: 'ຢູ່ນອກເຂດ',
+    gpsNote: 'ຄວາມແມ່ນຢຳ GPS ±3 ແມັດ. ການເຂົ້າວຽກຈະບັນທຶກໄລຍະທາງໄວ້ນຳ.',
+    checkIn: 'ເຂົ້າວຽກ', checkOut: 'ອອກວຽກ',
+    tooFarIn: 'ເຂົ້າໃກ້ຂຶ້ນເພື່ອລົງເວລາເຂົ້າ', tooFarOut: 'ເຂົ້າໃກ້ຂຶ້ນເພື່ອລົງເວລາອອກ',
+    today: 'ວັນນີ້', inShort: 'ເຂົ້າ', outShort: 'ອອກ', hours: 'ຊົ່ວໂມງ',
+    shiftNote: 'ເວລາວຽກ 09:00 – 18:00 · ພັກທ່ຽງ 12:00 – 13:30 · ຊ້າຫຼັງ 09:30 · ຈັນ ຫາ ສຸກ',
+    thisMonth: 'ເດືອນນີ້', present: 'ມາວຽກ', late: 'ມາຊ້າ', onLeave: 'ລາພັກ',
+    recentDays: 'ວັນຜ່ານມາ', resetDay: 'ຕັ້ງວັນທົດລອງໃໝ່',
+    balance: 'ວັນລາຄົງເຫຼືອ', holidays: 'ວັນພັກ', requests: 'ຄຳຂໍ',
+    applyLeave: 'ຂໍລາພັກ', nextHoliday: 'ວັນພັກຕໍ່ໄປ',
+    holidays2026: 'ວັນພັກລັດຖະການ 2026',
+    holidayNote: 'ວັນພັກອ້າງອີງຕາມແຈ້ງການປະຈຳປີຂອງກະຊວງແຮງງານ ແລະ ສະຫວັດດີການສັງຄົມ. ການລາພັກຈະບໍ່ຫັກວັນພັກລັດຖະການ ຫຼື ວັນເສົາ-ອາທິດ.',
+    annual: 'ລາພັກປະຈຳປີ', sick: 'ລາປ່ວຍ', personal: 'ລາກິດສ່ວນຕົວ',
+    annualNote: 'ກົດໝາຍແຮງງານ ຂັ້ນຕ່ຳ 15 ວັນ', sickNote: 'ຈ່າຍເງິນເມື່ອມີໃບຢັ້ງຢືນແພດ', personalNote: 'ນະໂຍບາຍຂອງສະຕູດິໂອ 5 ວັນຕໍ່ປີ',
+    type: 'ປະເພດ', from: 'ຈາກວັນທີ', to: 'ຫາວັນທີ', reason: 'ເຫດຜົນ',
+    sendApproval: 'ສົ່ງຂໍອະນຸມັດ', approverNote: 'ວັນລາຄົງເຫຼືອຈະປັບປຸງເມື່ອໄດ້ຮັບການອະນຸມັດ.',
+    viewPayslip: 'ເບິ່ງໃບເງິນເດືອນ', earlierPayslips: 'ໃບເງິນເດືອນກ່ອນໜ້າ', allPayslips: 'ໃບເງິນເດືອນທັງໝົດ',
+    payslip: 'ໃບເງິນເດືອນ', netPay: 'ເງິນສຸດທິ',
+    payNote: 'ຫັກປະກັນສັງຄົມ 5.5% ຂອງເງິນເດືອນທີ່ຄິດໄລ່. ອາກອນລາຍໄດ້ຄິດໄລ່ຕາມອັດຕາກ້າວໜ້າລາຍເດືອນ. ເງິນນອກເວລາຄິດຈາກບັນທຶກການເຂົ້າວຽກທີ່ອະນຸມັດແລ້ວ.',
+    basic: 'ເງິນເດືອນພື້ນຖານ', ot: 'ເງິນເຮັດວຽກນອກເວລາ', allow: 'ເງິນອຸດໜູນຕຳແໜ່ງ', gross: 'ເງິນລວມ',
+    sso: 'ປະກັນສັງຄົມ 5.5%', tax: 'ອາກອນລາຍໄດ້',
+    netFor: 'ເງິນສຸດທິ', paid: 'ຈ່າຍວັນທີ',
+    rollToday: 'ລາຍຊື່ວັນນີ້', approve: 'ອະນຸມັດ', reject: 'ບໍ່ອະນຸມັດ',
+    allClear: 'ບໍ່ມີລາຍການລໍຖ້າ', allClearNote: 'ຄຳຂໍລາພັກໃໝ່ຈະປາກົດຢູ່ນີ້ທັນທີ.',
+    periodOpen: 'ງວດທີ່ເປີດຢູ່', september: 'ເດືອນກັນຍາ 2026',
+    headcount: 'ຈຳນວນພະນັກງານ', ssoTotal: 'ປະກັນສັງຄົມ', taxTotal: 'ອາກອນລາຍໄດ້', otHours: 'ຊົ່ວໂມງນອກເວລາ',
+    perPerson: 'ລາຍບຸກຄົນ', approveRun: 'ອະນຸມັດການຈ່າຍເງິນເດືອນ', runApproved: 'ອະນຸມັດແລ້ວ',
+    workplace: 'ສະຖານທີ່ເຮັດວຽກ', address: 'ບ້ານໂພນທັນ, ເມືອງໄຊເສດຖາ, ນະຄອນຫຼວງວຽງຈັນ',
+    language: 'ພາສາ', signOut: 'ອອກຈາກລະບົບ',
+    peopleNote: 'ຝ່າຍບຸຄະລາກອນສາມາດປັບວັນລາ, ເວລາວຽກ ແລະ ລະຫວ່າງເຂດ GPS ຂອງແຕ່ລະຄົນຈາກລາຍຊື່ນີ້.',
+    tabAtt: 'ເຂົ້າວຽກ', tabLeave: 'ລາພັກ', tabPay: 'ເງິນເດືອນ', tabMe: 'ຂ້ອຍ',
+    tabTeam: 'ທີມ', tabAppr: 'ອະນຸມັດ', tabRun: 'ຈ່າຍເງິນເດືອນ', tabPeople: 'ພະນັກງານ',
+    roleEmp: 'ພະນັກງານ', roleMgr: 'ຫົວໜ້າ', roleHr: 'ບຸຄະລາກອນ',
+    pending: 'ລໍຖ້າອະນຸມັດ', approved: 'ອະນຸມັດແລ້ວ', rejected: 'ບໍ່ອະນຸມັດ',
+    workingDays: 'ວັນເຮັດວຽກ', workingDay: 'ວັນເຮັດວຽກ',
+    set: { late: 'ເຕືອນເວລາ 08:45', payslip: 'ແຈ້ງເມື່ອໃບເງິນເດືອນອອກ', holiday: 'ແຈ້ງການວັນພັກ' },
+    noReason: 'ບໍ່ໄດ້ລະບຸເຫດຜົນ',
+    punctuality: 'ການມາວຽກຕົງເວລາເດືອນນີ້', lateDays: 'ຄັ້ງທີ່ມາຊ້າ',
+    punctClear: 'ມາຕົງເວລາ', punctWarned: 'ອອກໃບຕັກເຕືອນແລ້ວ', punctDeduct: 'ເລີ່ມຫັກເງິນ', punctHalf: 'ຈ່າຍເຄິ່ງເງິນເດືອນ',
+    punctClearNote: 'ໃບຕັກເຕືອນຈະອອກເມື່ອມາຊ້າຄັ້ງທີ 3. ມາຊ້າ ໝາຍເຖິງ ຫຼັງ 09:30.',
+    punctWarnedNote: 'ເດືອນນີ້ມາຊ້າ 3 ຄັ້ງ. ໄດ້ອອກໃບຕັກເຕືອນແລ້ວ ແຕ່ຍັງບໍ່ຫັກເງິນ.',
+    punctDeductNote: 'ເກີນ 3 ຄັ້ງແລ້ວ, ຫັກ 10,000 ກີບ ຕໍ່ຊົ່ວໂມງ ນັບຈາກ 09:30.',
+    punctHalfNote: 'ມາຊ້າ 15 ຄັ້ງ ຫຼື ຫຼາຍກວ່າ — ຈ່າຍເຄິ່ງເງິນເດືອນ.',
+    lateDeduction: 'ຫັກເງິນມາຊ້າ',
+    lateBreakdown: 'ວັນມາຊ້າ ແລະ ການຫັກເງິນ',
+    lateRule: 'ມາຊ້າ 3 ຄັ້ງແຮກຂອງເດືອນ ໄດ້ຮັບພຽງໃບຕັກເຕືອນ. ຈາກຄັ້ງທີ 4 ໄປ, ຫັກ 10,000 ກີບ ຕໍ່ຊົ່ວໂມງທີ່ເລີ່ມ ນັບຈາກ 09:30. ຖ້າມາຊ້າເກີນ 2 ຊົ່ວໂມງ ຈະບໍ່ຄິດຄ່າແຮງວັນນັ້ນ, ແລະ ຖ້າມາຊ້າ 15 ຄັ້ງໃນເດືອນດຽວ ຈະຈ່າຍເຄິ່ງເງິນເດືອນ.',
+    arrived: 'ເຂົ້າ', noDeduct: 'ໃບຕັກເຕືອນ', unpaidDay: 'ບໍ່ຄິດຄ່າແຮງ',
+    basicHalf: 'ເງິນເດືອນພື້ນຖານ (ເຄິ່ງ — ມາຊ້າ 15 ຄັ້ງ)',
+  },
+};
+
+const HOLIDAYS = [
+  { iso: '2026-01-01', en: ["1 Jan", "International New Year's Day", 'Thursday', '1 day'], lo: ['1 ມ.ກ.', 'ວັນປີໃໝ່ສາກົນ', 'ວັນພະຫັດ', '1 ວັນ'] },
+  { iso: '2026-03-08', en: ['8 Mar', "International Women's Day", 'Sunday · women employees', '1 day'], lo: ['8 ມ.ນ.', 'ວັນແມ່ຍິງສາກົນ', 'ວັນອາທິດ · ພະນັກງານຍິງ', '1 ວັນ'] },
+  { iso: '2026-04-14', en: ['14–16 Apr', 'Lao New Year (Pi Mai Lao)', 'Tuesday to Thursday', '3 days'], lo: ['14–16 ເມ.ສ.', 'ບຸນປີໃໝ່ລາວ', 'ວັນອັງຄານ ຫາ ວັນພະຫັດ', '3 ວັນ'] },
+  { iso: '2026-05-01', en: ['1 May', 'International Labour Day', 'Friday', '1 day'], lo: ['1 ພ.ພ.', 'ວັນກຳມະກອນສາກົນ', 'ວັນສຸກ', '1 ວັນ'] },
+  { iso: '2026-12-02', en: ['2 Dec', 'Lao National Day', 'Wednesday', '1 day'], lo: ['2 ທ.ວ.', 'ວັນຊາດລາວ', 'ວັນພຸດ', '1 ວັນ'] },
+];
+
+const HOLIDAY_ISO = ['2026-01-01','2026-03-08','2026-04-14','2026-04-15','2026-04-16','2026-05-01','2026-12-02'];
+
+const PAYSLIPS = [
+  { period: ['August 2026', 'ເດືອນສິງຫາ 2026'], paid: ['29 Aug 2026', '29 ສ.ຫ. 2026'], basic: 4500000, ot: 320000, allow: 500000 },
+  { period: ['July 2026', 'ເດືອນກໍລະກົດ 2026'], paid: ['29 Jul 2026', '29 ກ.ລ. 2026'], basic: 4500000, ot: 180000, allow: 500000 },
+  { period: ['June 2026', 'ເດືອນມິຖຸນາ 2026'], paid: ['29 Jun 2026', '29 ມິ.ຖ. 2026'], basic: 4500000, ot: 240000, allow: 500000 },
+  { period: ['May 2026', 'ເດືອນພຶດສະພາ 2026'], paid: ['29 May 2026', '29 ພ.ພ. 2026'], basic: 4500000, ot: 0, allow: 500000 },
+];
+
+function computePay(p, opt) {
+  const o = opt || {};
+  const basic = o.half ? Math.round(p.basic / 2) : p.basic;
+  const gross = basic + p.ot + p.allow;
+  const sso = Math.round(gross * 0.055);
+  let tax = 0;
+  if (gross > 1300000) tax += Math.round((Math.min(gross, 5000000) - 1300000) * 0.05);
+  if (gross > 5000000) tax += Math.round((Math.min(gross, 15000000) - 5000000) * 0.10);
+  const lateDeduct = o.lateDeduct || 0;
+  return { basic, gross, sso, tax, lateDeduct, net: gross - sso - tax - lateDeduct };
+}
+
+const GRACE_MIN = 570;          // 09:30
+const LATE_RATE = 10000;        // LAK per started hour after 09:30
+const LATE_FREE = 3;            // first three late days: warning letter only
+const HALF_AT = 15;             // half salary from fifteen late days
+const UNPAID_AFTER_MIN = 120;   // more than two hours late leaves the day unpaid
+
+const LATE_TIMES = ['09:42','10:05','09:36','10:38','09:51','11:50','10:12','09:34','10:55','09:47','10:22','09:38','11:05','10:03','09:44','10:31','09:52','10:47'];
+const SEP_LATE_DOM = [2,4,8,10,14,16,18,22,24,25,28,29,30,1,3,7,9,11];
+
+function lateModel(count, basic, lang) {
+  const lo = lang === 'lo';
+  const daily = Math.round(basic / 22);
+  const dayNames = lo ? ['ອາທິດ','ຈັນ','ອັງຄານ','ພຸດ','ພະຫັດ','ສຸກ','ເສົາ'] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const rows = [];
+  let total = 0;
+  const doms = SEP_LATE_DOM.slice(0, count).sort((a, b) => a - b);
+  for (let k = 0; k < count; k++) {
+    const time = LATE_TIMES[k % LATE_TIMES.length];
+    const parts = time.split(':');
+    const mins = Number(parts[0]) * 60 + Number(parts[1]) - GRACE_MIN;
+    const dom = doms[k];
+    const wd = dayNames[new Date(2026, 8, dom).getDay()];
+    const unpaid = mins > UNPAID_AFTER_MIN;
+    const charged = k >= LATE_FREE;
+    const amount = !charged ? 0 : (unpaid ? daily : Math.ceil(mins / 60) * LATE_RATE);
+    total += amount;
+    rows.push({
+      dom, time, mins, unpaid, charged, amount,
+      day: wd + ' ' + dom + (lo ? ' ກ.ຍ.' : ' Sep'),
+      detail: time + ' · +' + Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm',
+    });
+  }
+  return { rows, total, warned: count >= LATE_FREE, deducting: count > LATE_FREE, half: count >= HALF_AT, daily };
+}
+
+const STAFF = [
+  { ini: 'SK', name: ['Somchai Keomany', 'ສົມໄຊ ແກ້ວມະນີ'], role: ['Studio manager', 'ຜູ້ຈັດການສະຕູດິໂອ'], basic: 4500000, ot: 320000, allow: 500000, left: 9 },
+  { ini: 'PV', name: ['Phetsamone Vilay', 'ເພັດສະໝອນ ວິໄລ'], role: ['Photographer', 'ຊ່າງພາບ'], basic: 3800000, ot: 240000, allow: 300000, left: 12 },
+  { ini: 'NC', name: ['Noy Chanthavong', 'ນ້ອຍ ຈັນທະວົງ'], role: ['Retoucher', 'ຊ່າງແກ້ໄຂພາບ'], basic: 3200000, ot: 160000, allow: 200000, left: 7 },
+  { ini: 'KS', name: ['Khamla Sisouk', 'ຄຳລ້າ ສີສຸກ'], role: ['Front desk', 'ພະນັກງານຕ້ອນຮັບ'], basic: 2600000, ot: 80000, allow: 150000, left: 15 },
+  { ini: 'TL', name: ['Thongdy Latsamy', 'ທອງດີ ລັດສະໝີ'], role: ['Assistant', 'ຜູ້ຊ່ວຍ'], basic: 2400000, ot: 120000, allow: 100000, left: 11 },
+  { ini: 'MV', name: ['Manivone Douangdy', 'ມະນີວອນ ດວງດີ'], role: ['Accounts', 'ບັນຊີ'], basic: 3000000, ot: 0, allow: 250000, left: 13 },
+];
+
+const TYPE_KEYS = ['annual', 'sick', 'personal'];
+
+class Component extends DCLogic {
+  state = {
+    role: 'emp', lang: 'en',
+    tab: 'att', leaveTab: 'balance',
+    dist: 4, lateN: 4,
+    status: 'out', inTime: null, outTime: null, tick: 0,
+    applyOpen: false, payOpen: null, toast: null, runApproved: false,
+    form: { type: 'annual', from: '2026-09-21', to: '2026-09-23', reason: '' },
+    error: null,
+    toggles: { late: true, payslip: true, holiday: false },
+    requests: [
+      { key: 'annual', range: ['13 – 14 Jul 2026', '13 – 14 ກ.ລ. 2026'], n: 2, status: 'approved', reason: ['Family trip to Luang Prabang', 'ໄປທ່ຽວຫຼວງພະບາງກັບຄອບຄົວ'] },
+      { key: 'sick', range: ['2 Jun 2026', '2 ມິ.ຖ. 2026'], n: 1, status: 'approved', reason: ['Clinic certificate attached', 'ມີໃບຢັ້ງຢືນຈາກຄລີນິກ'] },
+      { key: 'personal', range: ['20 Apr 2026', '20 ເມ.ສ. 2026'], n: 1, status: 'rejected', reason: ['Overlapped with a wedding shoot', 'ຊ້ຳກັບວັນຖ່າຍງານດອງ'] },
+    ],
+    queue: [
+      { id: 1, ini: 'PV', who: ['Phetsamone Vilay', 'ເພັດສະໝອນ ວິໄລ'], key: 'annual', range: ['28 – 30 Sep 2026', '28 – 30 ກ.ຍ. 2026'], n: 3, reason: ['Sister’s wedding in Pakse', 'ງານດອງນ້ອງສາວທີ່ປາກເຊ'] },
+      { id: 2, ini: 'NC', who: ['Noy Chanthavong', 'ນ້ອຍ ຈັນທະວົງ'], key: 'sick', range: ['9 Sep 2026', '9 ກ.ຍ. 2026'], n: 1, reason: ['Dentist appointment', 'ນັດໝໍປົວແຂ້ວ'] },
+    ],
+  };
+
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      if (this.state.status === 'in') this.setState(s => ({ tick: s.tick + 1 }));
+    }, 1000);
+  }
+  componentWillUnmount() { clearInterval(this.timer); clearTimeout(this.toastT); }
+
+  flash(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this.toastT);
+    this.toastT = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+
+  workingDays(from, to) {
+    const a = new Date(from), b = new Date(to);
+    if (isNaN(a.getTime()) || isNaN(b.getTime()) || b < a) return null;
+    let n = 0, holi = 0, wknd = 0;
+    for (let d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) {
+      if (d.getDay() === 0 || d.getDay() === 6) { wknd++; continue; }
+      if (HOLIDAY_ISO.indexOf(d.toISOString().slice(0, 10)) >= 0) { holi++; continue; }
+      n++;
+    }
+    return { n, holi, wknd };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const lo = s.lang === 'lo';
+    const t = D[s.lang];
+    const i = lo ? 1 : 0;
+    const radius = this.props.radius ?? 10;
+    const dist = s.dist;
+    const far = dist > radius;
+    const fontStack = lo ? '"Noto Sans Lao", var(--font-body)' : 'var(--font-body)';
+    const headFont = lo ? '"Noto Sans Lao", var(--font-heading)' : 'var(--font-heading)';
+
+    const hhmm = ms => { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+    const el = s.inTime ? Math.floor((Date.now() - s.inTime) / 1000) : 0;
+    const pad = n => String(n).padStart(2, '0');
+    const workedMin = s.inTime && s.outTime ? Math.round((s.outTime - s.inTime) / 60000) : 0;
+    const netMin = Math.max(0, workedMin - (workedMin > 90 ? 90 : 0));
+    const inLabel = s.inTime ? hhmm(s.inTime) : '––:––';
+    const outLabel = s.outTime ? hhmm(s.outTime) : '––:––';
+
+    const wd = this.workingDays(s.form.from, s.form.to);
+    let calcNote = lo ? 'ເລືອກວັນທີໃຫ້ຖືກຕ້ອງ.' : 'Choose a valid date range.';
+    if (wd) {
+      const parts = [];
+      if (wd.wknd) parts.push(lo ? (wd.wknd + ' ວັນເສົາ-ອາທິດ') : (wd.wknd + ' weekend day' + (wd.wknd > 1 ? 's' : '')));
+      if (wd.holi) parts.push(lo ? (wd.holi + ' ວັນພັກລັດຖະການ') : (wd.holi + ' public holiday' + (wd.holi > 1 ? 's' : '')));
+      calcNote = parts.length
+        ? (lo ? ('ຫັກວັນເຮັດວຽກ, ບໍ່ນັບ ' + parts.join(' ແລະ ') + '.') : ('Working days deducted, excluding ' + parts.join(' and ') + '.'))
+        : (lo ? 'ຫັກຈາກວັນລາຄົງເຫຼືອຂອງທ່ານ.' : 'Working days deducted from your balance.');
+    }
+
+    const dayWord = n => (n === 1 ? t.workingDay : t.workingDays);
+    const statusTag = k => ({ pending: 'tag-outline', approved: 'tag-accent', rejected: 'tag-neutral' })[k];
+
+    const usedAnnual = 6, usedSick = 1, usedPersonal = 1;
+    const bal = [
+      { name: t.annual, total: 15, used: usedAnnual, note: t.annualNote },
+      { name: t.sick, total: 30, used: usedSick, note: t.sickNote },
+      { name: t.personal, total: 5, used: usedPersonal, note: t.personalNote },
+    ];
+
+    const TABS = {
+      emp: [
+        { key: 'att', label: t.tabAtt, icon: 'M12 6v6l4 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18' },
+        { key: 'leave', label: t.tabLeave, icon: 'M8 2v4M16 2v4M3 9h18M5 5h14v16H5z' },
+        { key: 'pay', label: t.tabPay, icon: 'M2 7h20v10H2zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5' },
+        { key: 'me', label: t.tabMe, icon: 'M20 21a8 8 0 0 0-16 0M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8' },
+      ],
+      mgr: [
+        { key: 'team', label: t.tabTeam, icon: 'M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9.5 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8M22 21v-2a4 4 0 0 0-3-3.87' },
+        { key: 'appr', label: t.tabAppr, icon: 'M9 11l3 3 7-7M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9' },
+        { key: 'leave', label: t.tabLeave, icon: 'M8 2v4M16 2v4M3 9h18M5 5h14v16H5z' },
+        { key: 'me', label: t.tabMe, icon: 'M20 21a8 8 0 0 0-16 0M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8' },
+      ],
+      hr: [
+        { key: 'run', label: t.tabRun, icon: 'M2 7h20v10H2zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5' },
+        { key: 'leave', label: t.tabLeave, icon: 'M8 2v4M16 2v4M3 9h18M5 5h14v16H5z' },
+        { key: 'people', label: t.tabPeople, icon: 'M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9.5 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8M22 21v-2a4 4 0 0 0-3-3.87' },
+        { key: 'me', label: t.tabMe, icon: 'M20 21a8 8 0 0 0-16 0M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8' },
+      ],
+    };
+    const tabsForRole = TABS[s.role];
+    const activeTab = tabsForRole.some(x => x.key === s.tab) ? s.tab : tabsForRole[0].key;
+    const titleFor = { att: t.tabAtt, leave: t.tabLeave, pay: t.tabPay, me: t.tabMe, team: t.rollToday, appr: t.tabAppr, run: t.tabRun, people: t.tabPeople };
+
+    const runNets = STAFF.map(p => computePay(p));
+    const runTotal = runNets.reduce((a, b) => a + b.net, 0);
+
+    const me = s.role === 'mgr' ? STAFF[0] : s.role === 'hr' ? STAFF[5] : STAFF[0];
+    const meRoleLabel = s.role === 'emp' ? (lo ? 'ຊ່າງພາບ · ID 0142' : 'Studio manager · ID 0142') : (me.role[i] + ' · ID 0' + (s.role === 'hr' ? '147' : '142'));
+
+    const lateN = s.lateN;
+    const LM = lateModel(lateN, STAFF[0].basic, s.lang);
+    const punct = LM.half
+      ? { key: 'punctHalf', ink: 'var(--color-neutral-900)', bg: '#fff', border: 'var(--color-neutral-900)', kicker: 'var(--color-neutral-700)', body: 'var(--color-neutral-700)' }
+      : LM.deducting
+        ? { key: 'punctDeduct', ink: 'var(--color-accent-900)', bg: 'var(--color-accent-100)', border: 'var(--color-accent-200)', kicker: 'var(--color-accent-800)', body: 'var(--color-accent-800)' }
+        : LM.warned
+          ? { key: 'punctWarned', ink: 'var(--color-accent-900)', bg: 'var(--color-accent-100)', border: 'var(--color-accent-200)', kicker: 'var(--color-accent-800)', body: 'var(--color-accent-800)' }
+          : { key: 'punctClear', ink: 'var(--color-text)', bg: '#fff', border: 'var(--color-divider)', kicker: 'var(--color-neutral-700)', body: 'var(--color-neutral-700)' };
+
+    const pIdx = s.payOpen == null ? 0 : s.payOpen;
+    const p = PAYSLIPS[pIdx];
+    const payLate = pIdx === 0;
+    const c = computePay(p, payLate ? { half: LM.half, lateDeduct: LM.total } : {});
+    const c0 = computePay(PAYSLIPS[0], { half: LM.half, lateDeduct: LM.total });
+    const ink = 'var(--color-text)', mid = 'var(--color-neutral-700)';
+
+    return {
+      t, fontStack, headFont, radius, dist,
+      distLabel: dist + ' m',
+      distColor: far ? 'var(--color-neutral-900)' : 'var(--color-accent-800)',
+      markerPct: (Math.min(dist, 40) / 40 * 100) + '%',
+      outOfRange: far,
+      rangeLabel: far ? t.outside : t.inside,
+      rangeTagClass: far ? 'tag-outline' : 'tag-accent',
+      ciOpacity: far ? 0.42 : 1, coOpacity: far ? 0.42 : 1,
+      checkInLabel: far ? t.tooFarIn : t.checkIn,
+      checkOutLabel: far ? t.tooFarOut : t.checkOut,
+      onDist: e => this.setState({ dist: Number(e.target.value) }),
+
+      roleLabel: { emp: t.roleEmp, mgr: t.roleMgr, hr: t.roleHr }[s.role],
+      screenTitle: titleFor[activeTab],
+      initials: me.ini,
+      meName: me.name[i],
+      meRole: meRoleLabel,
+      radiusLine: (lo ? 'ລະຫວ່າງເຂດ ' : 'radius ') + radius + ' m',
+      todayLong: lo ? 'ອັງຄານ 8 ກ.ຍ. 2026' : 'Tue 8 Sep 2026',
+
+      roleOpts: [['emp', t.roleEmp], ['mgr', t.roleMgr], ['hr', t.roleHr]].map(([k, l]) => ({
+        label: l,
+        bg: s.role === k ? 'var(--color-accent-100)' : '#fff',
+        color: s.role === k ? 'var(--color-accent-800)' : 'var(--color-neutral-700)',
+        onClick: () => this.setState({ role: k, tab: TABS[k][0].key, payOpen: null }),
+      })),
+      langOpts: [['en', 'EN', 'English'], ['lo', 'ລາວ', 'ລາວ']].map(([k, short, long]) => ({
+        label: short, long,
+        bg: s.lang === k ? 'var(--color-accent-100)' : '#fff',
+        color: s.lang === k ? 'var(--color-accent-800)' : 'var(--color-neutral-700)',
+        onClick: () => this.setState({ lang: k }),
+      })),
+      tabs: tabsForRole.map(x => ({
+        label: x.label, icon: x.icon,
+        color: activeTab === x.key ? 'var(--color-accent-800)' : 'var(--color-neutral-600)',
+        onClick: () => this.setState({ tab: x.key, payOpen: null }),
+      })),
+
+      scAtt: activeTab === 'att', scLeave: activeTab === 'leave', scPay: activeTab === 'pay',
+      scMe: activeTab === 'me', scTeam: activeTab === 'team', scAppr: activeTab === 'appr',
+      scRun: activeTab === 'run', scPeople: activeTab === 'people',
+
+      isOut: s.status === 'out', isIn: s.status === 'in', isDone: s.status === 'done',
+      elapsed: pad(Math.floor(el / 3600)) + ':' + pad(Math.floor((el % 3600) / 60)) + ':' + pad(el % 60),
+      sinceLabel: (lo ? 'ເລີ່ມວຽກແຕ່ ' : 'Working since ') + inLabel,
+      doneLabel: (lo ? 'ບັນທຶກແລ້ວ · ເຮັດວຽກ ' : 'Day recorded · ') + Math.floor(netMin / 60) + 'h ' + (netMin % 60) + 'm' + (lo ? '' : ' worked'),
+      inCell: inLabel, outCell: outLabel,
+      hoursCell: workedMin ? (Math.floor(netMin / 60) + 'h ' + (netMin % 60) + 'm') : (s.status === 'in' ? pad(Math.floor(el / 3600)) + ':' + pad(Math.floor((el % 3600) / 60)) : '––'),
+      onCheckIn: () => { if (far) return; const now = Date.now(); this.setState({ status: 'in', inTime: now, tick: 0 }); this.flash((lo ? 'ລົງເວລາເຂົ້າ ' : 'Checked in at ') + hhmm(now) + ' · ' + dist + ' m'); },
+      onCheckOut: () => { if (far) return; const now = Date.now(); this.setState({ status: 'done', outTime: now }); this.flash((lo ? 'ລົງເວລາອອກ ' : 'Checked out at ') + hhmm(now)); },
+      onReset: () => this.setState({ status: 'out', inTime: null, outTime: null }),
+
+      history: [
+        { day: lo ? 'ຈັນ 7 ກ.ຍ.' : 'Mon 7 Sep', span: '08:56 – 18:04', status: t.present, cls: 'tag-neutral' },
+        { day: lo ? 'ສຸກ 4 ກ.ຍ.' : 'Fri 4 Sep', span: '09:42 – 18:02', status: t.late, cls: 'tag-accent' },
+        { day: lo ? 'ພະຫັດ 3 ກ.ຍ.' : 'Thu 3 Sep', span: '08:58 – 18:00', status: t.present, cls: 'tag-neutral' },
+        { day: lo ? 'ພຸດ 2 ກ.ຍ.' : 'Wed 2 Sep', span: '09:03 – 18:11', status: t.present, cls: 'tag-neutral' },
+      ],
+
+      leaveTabs: [['balance', t.balance], ['holidays', t.holidays], ['requests', t.requests]].map(([k, l]) => ({
+        label: l,
+        color: s.leaveTab === k ? 'var(--color-accent-800)' : 'var(--color-neutral-700)',
+        line: s.leaveTab === k ? 'var(--color-accent)' : 'transparent',
+        onClick: () => this.setState({ leaveTab: k }),
+      })),
+      isBalance: s.leaveTab === 'balance', isHolidays: s.leaveTab === 'holidays', isRequests: s.leaveTab === 'requests',
+      balances: bal.map(b => ({
+        name: b.name, note: b.note,
+        used: lo ? ('ໃຊ້ແລ້ວ ' + b.used + '/' + b.total) : (b.used + ' of ' + b.total + ' used'),
+        pct: Math.round(b.used / b.total * 100) + '%',
+        left: (b.total - b.used) + (lo ? ' ວັນ' : ' left'),
+      })),
+      holidays: HOLIDAYS.map(h => ({ date: h[s.lang][0], name: h[s.lang][1], note: h[s.lang][2], days: h[s.lang][3] })),
+      nextHolidayName: HOLIDAYS[4][s.lang][1],
+      nextHolidayWhen: lo ? 'ວັນພຸດ 2 ທັນວາ 2026 · ອີກ 85 ວັນ' : 'Wednesday 2 December 2026 · in 85 days',
+
+      requests: s.requests.map(r => ({
+        typeLabel: t[r.key], range: r.range[i], daysLabel: r.n + ' ' + dayWord(r.n),
+        statusLabel: t[r.status], cls: statusTag(r.status), reason: r.reason[i],
+      })),
+
+      applyOpen: s.applyOpen,
+      onOpenApply: () => this.setState({ applyOpen: true, error: null }),
+      onCloseApply: () => this.setState({ applyOpen: false }),
+      form: s.form,
+      typeOpts: TYPE_KEYS.map(k => ({
+        label: t[k],
+        border: s.form.type === k ? 'var(--color-accent)' : 'var(--color-divider)',
+        bg: s.form.type === k ? 'var(--color-accent-100)' : 'transparent',
+        color: s.form.type === k ? 'var(--color-accent-800)' : 'var(--color-neutral-800)',
+        onClick: () => this.setState(st => ({ form: { ...st.form, type: k } })),
+      })),
+      onFrom: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, from: v } })); },
+      onTo: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, to: v } })); },
+      onReason: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, reason: v } })); },
+      calcDays: wd ? wd.n : '—',
+      calcNote,
+      hasError: !!s.error, error: s.error,
+      onSubmit: () => {
+        if (!wd || wd.n === 0) { this.setState({ error: lo ? 'ຊ່ວງວັນທີນີ້ບໍ່ມີວັນເຮັດວຽກ. ກະລຸນາເລືອກໃໝ່.' : 'That range has no working days. Pick different dates.' }); return; }
+        const left = { annual: 15 - usedAnnual, sick: 30 - usedSick, personal: 5 - usedPersonal }[s.form.type];
+        if (wd.n > left) { this.setState({ error: lo ? ('ວັນລາຄົງເຫຼືອມີພຽງ ' + left + ' ວັນ. ກະລຸນາຫຼຸດຈຳນວນວັນ.') : ('Only ' + left + ' day' + (left === 1 ? '' : 's') + ' remain in that balance. Shorten the range.') }); return; }
+        if (s.form.type === 'sick' && !s.form.reason.trim()) { this.setState({ error: lo ? 'ການລາປ່ວຍຕ້ອງລະບຸເຫດຜົນສັ້ນໆ.' : 'Sick leave needs a short reason.' }); return; }
+        const fmt = iso => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const rng = s.form.from === s.form.to ? fmt(s.form.from) : fmt(s.form.from) + ' – ' + fmt(s.form.to);
+        const reason = s.form.reason.trim();
+        const req = { key: s.form.type, range: [rng, rng], n: wd.n, status: 'pending', reason: [reason || D.en.noReason, reason || D.lo.noReason] };
+        this.setState(st => ({ requests: [req, ...st.requests], applyOpen: false, leaveTab: 'requests', error: null }));
+        this.flash(lo ? 'ສົ່ງຄຳຂໍລາພັກແລ້ວ' : 'Leave request sent for approval');
+      },
+
+      payListOpen: s.payOpen == null, payDetailOpen: s.payOpen != null,
+      latestLabel: t.netPay + ' · ' + PAYSLIPS[0].period[i],
+      latestNet: LAK(c0.net),
+      lateN,
+      onLateN: e => this.setState({ lateN: Number(e.target.value) }),
+      monPresent: Math.max(0, 21 - lateN - 1),
+      punctHeadline: t[punct.key],
+      punctNote: t[punct.key + 'Note'],
+      punctInk: punct.ink, punctBg: punct.bg, punctBorder: punct.border, punctKicker: punct.kicker, punctBody: punct.body,
+      hasLateDeduct: LM.total > 0,
+      lateDeductTotal: LAK(LM.total),
+      lateTicks: Array.from({ length: HALF_AT }, (_, k) => ({
+        bg: k < Math.min(lateN, HALF_AT)
+          ? (k < LATE_FREE ? 'var(--color-accent-300)' : 'var(--color-accent)')
+          : 'var(--color-neutral-200)',
+      })),
+      lateRows: LM.rows.map(r => ({
+        day: r.day, detail: r.detail,
+        amount: r.charged ? ('−' + LAK(r.amount) + (r.unpaid ? ' · ' + t.unpaidDay : '')) : t.noDeduct,
+        color: r.charged ? 'var(--color-accent-800)' : 'var(--color-neutral-600)',
+      })),
+      payShowLate: payLate && LM.total > 0,
+      paidLine: t.paid + ' ' + PAYSLIPS[0].paid[i] + (lo ? '' : '') + ' · BCEL ···· 4417',
+      onOpenLatest: () => this.setState({ payOpen: 0 }),
+      onClosePay: () => this.setState({ payOpen: null }),
+      payslips: PAYSLIPS.map((ps, ix) => ({
+        period: ps.period[i], paidShort: t.paid + ' ' + ps.paid[i], net: LAK(computePay(ps).net),
+        onClick: () => this.setState({ payOpen: ix }),
+      })),
+      payDetail: {
+        period: p.period[i], net: LAK(c.net),
+        who: me.name[i] + ' · ' + me.role[i],
+        lines: [
+          { label: payLate && LM.half ? t.basicHalf : t.basic, value: LAK(c.basic), color: ink, weight: '400' },
+          { label: t.ot, value: LAK(p.ot), color: ink, weight: '400' },
+          { label: t.allow, value: LAK(p.allow), color: ink, weight: '400' },
+          { label: t.gross, value: LAK(c.gross), color: ink, weight: '600' },
+          { label: t.sso, value: '−' + LAK(c.sso), color: mid, weight: '400' },
+          { label: t.tax, value: '−' + LAK(c.tax), color: mid, weight: '400' },
+        ].concat(c.lateDeduct ? [{ label: t.lateDeduction + ' (' + lateN + ' ' + t.lateDays + ')', value: '−' + LAK(c.lateDeduct), color: 'var(--color-accent-800)', weight: '400' }] : []),
+      },
+
+      team: [
+        { ini: 'SK', name: STAFF[0].name[i], detail: '08:56 · 4 m', status: t.present, cls: 'tag-neutral' },
+        { ini: 'PV', name: STAFF[1].name[i], detail: '09:41 · 6 m', status: t.late, cls: 'tag-accent' },
+        { ini: 'NC', name: STAFF[2].name[i], detail: '08:48 · 3 m', status: t.present, cls: 'tag-neutral' },
+        { ini: 'KS', name: STAFF[3].name[i], detail: '08:59 · 8 m', status: t.present, cls: 'tag-neutral' },
+        { ini: 'TL', name: STAFF[4].name[i], detail: lo ? 'ລາພັກປະຈຳປີ' : 'Annual leave', status: t.onLeave, cls: 'tag-outline' },
+        { ini: 'MV', name: STAFF[5].name[i], detail: '09:02 · 5 m', status: t.present, cls: 'tag-neutral' },
+      ],
+
+      hasPending: s.queue.length > 0, noPending: s.queue.length === 0,
+      pendingCount: lo ? (s.queue.length + ' ລາຍການລໍຖ້າອະນຸມັດ') : (s.queue.length + ' request' + (s.queue.length === 1 ? '' : 's') + ' waiting'),
+      pending: s.queue.map(q => ({
+        ini: q.ini, name: q.who[i], typeLabel: t[q.key], range: q.range[i], days: q.n, reason: q.reason[i],
+        onApprove: () => { this.setState(st => ({ queue: st.queue.filter(x => x.id !== q.id) })); this.flash((lo ? 'ອະນຸມັດ · ' : 'Approved · ') + q.who[i]); },
+        onReject: () => { this.setState(st => ({ queue: st.queue.filter(x => x.id !== q.id) })); this.flash((lo ? 'ບໍ່ອະນຸມັດ · ' : 'Rejected · ') + q.who[i]); },
+      })),
+
+      runTotal: LAK(runTotal),
+      runSso: LAK(runNets.reduce((a, b) => a + b.sso, 0)),
+      runTax: LAK(runNets.reduce((a, b) => a + b.tax, 0)),
+      runRows: STAFF.map((e, ix) => ({
+        name: e.name[i],
+        meta: e.role[i] + ' · ' + (lo ? 'ນອກເວລາ ' : 'OT ') + LAK(e.ot),
+        net: LAK(runNets[ix].net),
+      })),
+      runBtnLabel: s.runApproved ? t.runApproved : t.approveRun,
+      onApproveRun: () => { this.setState({ runApproved: true }); this.flash(t.runApproved); },
+
+      people: STAFF.map(e => ({
+        ini: e.ini, name: e.name[i], role: e.role[i],
+        leaveLeft: e.left + (lo ? ' ວັນ' : ' d') + (lo ? '' : ' left'),
+      })),
+
+      settings: [['late', t.set.late], ['payslip', t.set.payslip], ['holiday', t.set.holiday]].map(([k, label]) => ({
+        label,
+        bg: s.toggles[k] ? 'var(--color-accent-200)' : 'var(--color-neutral-200)',
+        border: s.toggles[k] ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+        knob: s.toggles[k] ? '20px' : '2px',
+        onClick: () => this.setState(st => ({ toggles: { ...st.toggles, [k]: !st.toggles[k] } })),
+      })),
+
+      toastOpen: !!s.toast, toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
