@@ -30,7 +30,8 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
 export function requireRole(...roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    // ADMIN is a superuser and clears every role gate.
+    if (!req.user || (req.user.role !== 'ADMIN' && !roles.includes(req.user.role))) {
       return res.status(403).json({ error: 'Forbidden for this role' });
     }
     next();

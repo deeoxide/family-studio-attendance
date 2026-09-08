@@ -1,4 +1,4 @@
-export type Role = 'EMPLOYEE' | 'MANAGER' | 'HR';
+export type Role = 'EMPLOYEE' | 'MANAGER' | 'HR' | 'ADMIN';
 export type LeaveType = 'ANNUAL' | 'SICK' | 'PERSONAL';
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PayslipStatus = 'OPEN' | 'PAID';
@@ -133,11 +133,44 @@ export interface PayrollRun {
 
 export interface PersonRow {
   id: string;
+  email: string;
+  employeeCode: string;
   nameEn: string;
   nameLo: string;
   roleTitleEn: string;
   roleTitleLo: string;
   initials: string;
   role: Role;
+  basicSalary: number;
+  allowance: number;
+  otAmount: number;
+  managerId: string | null;
   annualLeaveLeft: number;
+}
+
+export interface RegisterEmployeeInput {
+  email: string;
+  nameEn: string;
+  nameLo: string;
+  roleTitleEn: string;
+  roleTitleLo: string;
+  role: Role;
+  password: string;
+  basicSalary: number;
+  allowance: number;
+  otAmount?: number;
+  managerId?: string;
+  employeeCode?: string;
+}
+
+export interface UpdateEmployeeInput {
+  nameEn?: string;
+  nameLo?: string;
+  roleTitleEn?: string;
+  roleTitleLo?: string;
+  role?: Role;
+  basicSalary?: number;
+  allowance?: number;
+  otAmount?: number;
+  managerId?: string | null;
 }

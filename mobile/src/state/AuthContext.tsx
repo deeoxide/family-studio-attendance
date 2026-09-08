@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { tokenStorage } from '@/lib/tokenStorage';
+import { tokenStore } from '@/lib/tokenStore';
 import { setAuthToken } from '@/api/client';
 import { authApi } from '@/api/endpoints';
 import type { User } from '@/api/types';
@@ -23,14 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const token = await tokenStorage.get(TOKEN_KEY);
+        const token = await tokenStore.get(TOKEN_KEY);
         if (token) {
           setAuthToken(token);
           const { user: me } = await authApi.me();
           setUser(me);
         }
       } catch {
-        await tokenStorage.remove(TOKEN_KEY);
+        await tokenStore.remove(TOKEN_KEY);
         setAuthToken(null);
       } finally {
         setLoading(false);
@@ -40,13 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const { token, user: loggedIn } = await authApi.login(email, password);
-    await tokenStorage.set(TOKEN_KEY, token);
+    await tokenStore.set(TOKEN_KEY, token);
     setAuthToken(token);
     setUser(loggedIn);
   };
 
   const logout = async () => {
-    await tokenStorage.remove(TOKEN_KEY);
+    await tokenStore.remove(TOKEN_KEY);
     setAuthToken(null);
     setUser(null);
   };

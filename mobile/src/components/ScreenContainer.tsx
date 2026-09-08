@@ -5,7 +5,7 @@ import { useAuth } from '@/state/AuthContext';
 import { useLanguage } from '@/state/LanguageContext';
 import { color, radius, bodyFont, headingFont } from '@/theme/tokens';
 
-const ROLE_LABEL_KEY = { EMPLOYEE: 'roleEmp', MANAGER: 'roleMgr', HR: 'roleHr' } as const;
+const ROLE_LABEL_KEY = { EMPLOYEE: 'roleEmp', MANAGER: 'roleMgr', HR: 'roleHr', ADMIN: 'roleHr' } as const;
 
 export function ScreenContainer({
   title,

@@ -35,6 +35,12 @@ const TAB_CONFIG = {
     { name: 'People', icon: 'people', labelKey: 'tabPeople', component: PeopleScreen },
     { name: 'Profile', icon: 'person', labelKey: 'tabMe', component: ProfileScreen },
   ],
+  ADMIN: [
+    { name: 'PayrollRun', icon: 'card', labelKey: 'tabRun', component: PayrollRunScreen },
+    { name: 'Leave', icon: 'calendar', labelKey: 'tabLeave', component: LeaveScreen },
+    { name: 'People', icon: 'people', labelKey: 'tabPeople', component: PeopleScreen },
+    { name: 'Profile', icon: 'person', labelKey: 'tabMe', component: ProfileScreen },
+  ],
 } as const;
 
 export function AppTabs() {

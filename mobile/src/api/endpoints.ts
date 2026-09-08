@@ -10,7 +10,9 @@ import type {
   PayrollRun,
   Payslip,
   PersonRow,
+  RegisterEmployeeInput,
   TeamTodayMember,
+  UpdateEmployeeInput,
   User,
 } from './types';
 
@@ -18,6 +20,8 @@ export const authApi = {
   login: (email: string, password: string) =>
     api.post<{ token: string; user: User }>('/api/auth/login', { email, password }),
   me: () => api.get<{ user: User }>('/api/auth/me'),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.post<{ ok: true }>('/api/auth/change-password', { currentPassword, newPassword }),
 };
 
 export const officeApi = {
@@ -59,4 +63,9 @@ export const payrollApi = {
 
 export const peopleApi = {
   list: () => api.get<{ people: PersonRow[] }>('/api/people'),
+  register: (input: RegisterEmployeeInput) => api.post<{ user: User }>('/api/people', input),
+  update: (id: string, input: UpdateEmployeeInput) =>
+    api.patch<{ user: User }>(`/api/people/${id}`, input),
+  resetPassword: (id: string, password: string) =>
+    api.post<{ ok: true }>(`/api/people/${id}/reset-password`, { password }),
 };

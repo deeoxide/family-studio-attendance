@@ -128,9 +128,12 @@ attendanceRouter.get('/summary', async (req, res) => {
   });
 });
 
-/** Manager roll call — today's status for direct reports. */
-attendanceRouter.get('/team-today', requireRole('MANAGER'), async (req, res) => {
-  const reports = await prisma.user.findMany({ where: { managerId: req.user!.id } });
+/** Roll call — today's status. Managers see their direct reports; HR/ADMIN see all staff. */
+attendanceRouter.get('/team-today', requireRole('MANAGER', 'HR', 'ADMIN'), async (req, res) => {
+  const reports =
+    req.user!.role === 'MANAGER'
+      ? await prisma.user.findMany({ where: { managerId: req.user!.id } })
+      : await prisma.user.findMany({ where: { role: { not: 'ADMIN' } }, orderBy: { nameEn: 'asc' } });
   const date = todayISO();
   const records = await prisma.attendanceRecord.findMany({
     where: { userId: { in: reports.map((r) => r.id) }, date },

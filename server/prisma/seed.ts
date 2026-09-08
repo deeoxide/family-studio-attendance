@@ -77,8 +77,8 @@ async function main() {
       name: 'Family Studio',
       addressEn: 'Ban Phonthan, Saysettha, Vientiane',
       addressLo: 'ບ້ານໂພນທັນ, ເມືອງໄຊເສດຖາ, ນະຄອນຫຼວງວຽງຈັນ',
-      lat: 17.9757,
-      lng: 102.6331,
+      lat: 17.9890155,
+      lng: 102.6368713,
       radiusM: 10,
       shiftStartMin: 9 * 60,
       graceEndMin: 9 * 60 + 30,
@@ -121,6 +121,33 @@ async function main() {
       });
     }
   }
+
+  // System administrator — the studio owner's account. Superuser role: every
+  // screen plus staff registration. Seeded with the demo password; change it
+  // from Profile after first sign-in.
+  const admin = await prisma.user.create({
+    data: {
+      email: 'deexaypanya0@gmail.com',
+      passwordHash,
+      employeeCode: '0001',
+      nameEn: 'Deexaypanya',
+      nameLo: 'Deexaypanya', // TODO: replace with the Lao spelling once confirmed
+      roleTitleEn: 'Administrator',
+      roleTitleLo: 'ຜູ້ຄຸ້ມຄອງລະບົບ',
+      initials: 'DX',
+      role: 'ADMIN',
+      basicSalary: 0,
+      otAmount: 0,
+      allowance: 0,
+    },
+  });
+  await prisma.leaveBalance.createMany({
+    data: [
+      { userId: admin.id, leaveType: 'ANNUAL', year: 2026, totalDays: 15 },
+      { userId: admin.id, leaveType: 'SICK', year: 2026, totalDays: 30 },
+      { userId: admin.id, leaveType: 'PERSONAL', year: 2026, totalDays: 5 },
+    ],
+  });
 
   // Leave balances — Labour Law annual 15 + sick 30, studio policy personal 5.
   for (const code of Object.keys(byCode)) {
@@ -228,6 +255,7 @@ async function main() {
   }
 
   console.log('Seeded. Demo login password for every account:', DEMO_PASSWORD);
+  console.log(` - deexaypanya0@gmail.com  (ADMIN)`);
   for (const s of STAFF) console.log(` - ${s.email}  (${s.role})`);
 }
 
