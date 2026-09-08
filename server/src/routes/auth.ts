@@ -1,0 +1,32 @@
+import { Router } from 'express';
+import bcrypt from 'bcryptjs';
+import { z } from 'zod';
+import { prisma } from '../lib/prisma';
+import { signToken } from '../lib/jwt';
+import { serializeUser } from '../lib/dto';
+import { requireAuth } from '../middleware/auth';
+
+export const authRouter = Router();
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+authRouter.post('/login', async (req, res) => {
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Enter a valid email and password' });
+
+  const user = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
+  if (!user) return res.status(401).json({ error: 'Incorrect email or password' });
+
+  const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
+  if (!ok) return res.status(401).json({ error: 'Incorrect email or password' });
+
+  const token = signToken({ sub: user.id, role: user.role });
+  res.json({ token, user: serializeUser(user) });
+});
+
+authRouter.get('/me', requireAuth, async (req, res) => {
+  res.json({ user: serializeUser(req.user!) });
+});

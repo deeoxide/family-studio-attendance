@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Family Studio",
+    "slug": "family-studio-attendance",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "la.familystudio.attendance",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Family Studio checks your distance from the studio so you can clock in and out."
+      }
+    },
+    "android": {
+      "package": "la.familystudio.attendance",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Family Studio checks your distance from the studio so you can clock in and out."
+        }
+      ]
+    ]
+  }
+}

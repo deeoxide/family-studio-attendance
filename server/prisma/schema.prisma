@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enum type, so roles/types/statuses are plain strings
+// here, constrained by the zod schemas in src/lib and src/routes instead:
+//   Role: "EMPLOYEE" | "MANAGER" | "HR"
+//   LeaveType: "ANNUAL" | "SICK" | "PERSONAL"
+//   LeaveStatus: "PENDING" | "APPROVED" | "REJECTED"
+//   PayslipStatus: "OPEN" | "PAID"
+
+/// Single workplace geofence + shift rule config. Seeded with one row (Family Studio)
+/// but modelled as a table so HR tooling can edit it later without a schema change.
+model Office {
+  id            String   @id @default(cuid())
+  name          String
+  addressEn     String
+  addressLo     String
+  lat           Float
+  lng           Float
+  radiusM       Int      @default(10)
+  shiftStartMin Int      @default(540) // 09:00
+  graceEndMin   Int      @default(570) // 09:30 - arrivals after this are late
+  shiftEndMin   Int      @default(1080) // 18:00
+  lunchStartMin Int      @default(720) // 12:00
+  lunchEndMin   Int      @default(810) // 13:30
+  workDays      String   @default("1,2,3,4,5") // Mon-Fri, 0=Sun
+  updatedAt     DateTime @updatedAt
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  employeeCode String   @unique
+  nameEn       String
+  nameLo       String
+  roleTitleEn  String
+  roleTitleLo  String
+  initials     String
+  role         String   @default("EMPLOYEE")
+  basicSalary  Int // LAK, monthly
+  otAmount     Int      @default(0) // LAK, current period overtime pay (from approved OT records)
+  allowance    Int      @default(0) // LAK, position allowance
+  managerId    String?
+  manager      User?    @relation("ManagerReports", fields: [managerId], references: [id])
+  reports      User[]   @relation("ManagerReports")
+  createdAt    DateTime @default(now())
+
+  attendance    AttendanceRecord[]
+  leaveBalances LeaveBalance[]
+  leaveRequests LeaveRequest[]     @relation("Requester")
+  decisions     LeaveRequest[]     @relation("Decider")
+  payslips      Payslip[]
+}
+
+model AttendanceRecord {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  date              String // YYYY-MM-DD, local calendar day
+  checkInAt         DateTime?
+  checkOutAt        DateTime?
+  checkInDistanceM  Float?
+  checkOutDistanceM Float?
+  lateMinutes       Int       @default(0) // minutes past the grace cutoff, 0 if on time
+  createdAt         DateTime  @default(now())
+
+  @@unique([userId, date])
+}
+
+model LeaveBalance {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+  leaveType String // ANNUAL | SICK | PERSONAL
+  year      Int
+  totalDays Int
+
+  @@unique([userId, leaveType, year])
+}
+
+model LeaveRequest {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("Requester", fields: [userId], references: [id])
+  leaveType   String // ANNUAL | SICK | PERSONAL
+  fromDate    String // YYYY-MM-DD
+  toDate      String // YYYY-MM-DD
+  workingDays Int
+  reason      String    @default("")
+  status      String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  decidedById String?
+  decidedBy   User?     @relation("Decider", fields: [decidedById], references: [id])
+  decidedAt   DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Holiday {
+  id     String @id @default(cuid())
+  date   String // YYYY-MM-DD
+  nameEn String
+  nameLo String
+  noteEn String
+  noteLo String
+  days   Int    @default(1)
+}
+
+model Payslip {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  periodMonth   String // YYYY-MM
+  basic         Int
+  ot            Int
+  allowance     Int
+  gross         Int
+  sso           Int
+  tax           Int
+  lateDeduction Int       @default(0)
+  net           Int
+  half          Boolean   @default(false)
+  status        String    @default("OPEN") // OPEN | PAID
+  paidAt        DateTime?
+
+  @@unique([userId, periodMonth])
+}
