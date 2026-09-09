@@ -9,10 +9,10 @@ import { AttendanceScreen } from '@/screens/AttendanceScreen';
 import { LeaveScreen } from '@/screens/LeaveScreen';
 import { PayrollScreen } from '@/screens/PayrollScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
-import { TeamScreen } from '@/screens/TeamScreen';
 import { ApprovalsScreen } from '@/screens/ApprovalsScreen';
 import { PayrollRunScreen } from '@/screens/PayrollRunScreen';
-import { PeopleScreen } from '@/screens/PeopleScreen';
+import { PeopleStack } from '@/navigation/PeopleStack';
+import { TeamStack } from '@/navigation/TeamStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -24,21 +24,23 @@ const TAB_CONFIG = {
     { name: 'Profile', icon: 'person', labelKey: 'tabMe', component: ProfileScreen },
   ],
   MANAGER: [
-    { name: 'Team', icon: 'people', labelKey: 'tabTeam', component: TeamScreen },
+    { name: 'Team', icon: 'people', labelKey: 'tabTeam', component: TeamStack },
     { name: 'Approvals', icon: 'checklist', labelKey: 'tabAppr', component: ApprovalsScreen },
     { name: 'Leave', icon: 'calendar', labelKey: 'tabLeave', component: LeaveScreen },
     { name: 'Profile', icon: 'person', labelKey: 'tabMe', component: ProfileScreen },
   ],
   HR: [
     { name: 'PayrollRun', icon: 'card', labelKey: 'tabRun', component: PayrollRunScreen },
+    { name: 'Approvals', icon: 'checklist', labelKey: 'tabAppr', component: ApprovalsScreen },
     { name: 'Leave', icon: 'calendar', labelKey: 'tabLeave', component: LeaveScreen },
-    { name: 'People', icon: 'people', labelKey: 'tabPeople', component: PeopleScreen },
+    { name: 'People', icon: 'people', labelKey: 'tabPeople', component: PeopleStack },
     { name: 'Profile', icon: 'person', labelKey: 'tabMe', component: ProfileScreen },
   ],
   ADMIN: [
     { name: 'PayrollRun', icon: 'card', labelKey: 'tabRun', component: PayrollRunScreen },
+    { name: 'Approvals', icon: 'checklist', labelKey: 'tabAppr', component: ApprovalsScreen },
     { name: 'Leave', icon: 'calendar', labelKey: 'tabLeave', component: LeaveScreen },
-    { name: 'People', icon: 'people', labelKey: 'tabPeople', component: PeopleScreen },
+    { name: 'People', icon: 'people', labelKey: 'tabPeople', component: PeopleStack },
     { name: 'Profile', icon: 'person', labelKey: 'tabMe', component: ProfileScreen },
   ],
 } as const;

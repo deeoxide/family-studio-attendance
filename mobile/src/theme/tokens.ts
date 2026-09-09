@@ -34,6 +34,16 @@ export const color = {
   accent900: '#3a270d',
 
   white: '#ffffff',
+
+  // Punctuality traffic-light. Muted to sit inside the white / gold / ink palette.
+  ok: '#3f7d4f',
+  okBg: '#eef3ee',
+  okBorder: '#cfe0d1',
+  warn: '#b68235', // = accent, the "yellow" level
+  warnBg: '#fff3e4',
+  danger: '#b0402f',
+  dangerBg: '#f7ebe8',
+  dangerBorder: '#e6c9c2',
 } as const;
 
 export const radius = { sm: 2, md: 4, lg: 7 } as const;
@@ -47,15 +57,28 @@ export const shadow = {
   lg: { shadowColor: '#2d2b2b', shadowOpacity: 0.22, shadowRadius: 32, shadowOffset: { width: 0, height: 12 }, elevation: 10 },
 } as const;
 
-/** Font family names as registered with expo-font in App.tsx. */
+/**
+ * Font family names as registered with expo-font in App.tsx.
+ *
+ * English  — Source Serif 4: a formal, modern-classical serif with lining
+ *            figures, so digits sit on a single baseline in tables and totals.
+ * Lao      — Noto Sans Lao throughout.
+ */
 export const fontFamily = {
-  headingEn: 'CormorantGaramond_600SemiBold',
-  headingEnRegular: 'CormorantGaramond_400Regular',
-  bodyEn: 'Lora_400Regular',
-  bodyEnMedium: 'Lora_600SemiBold',
+  headingEn: 'SourceSerif4_600SemiBold',
+  headingEnRegular: 'SourceSerif4_400Regular',
+  bodyEn: 'SourceSerif4_400Regular',
+  bodyEnMedium: 'SourceSerif4_600SemiBold',
   lao: 'NotoSansLao_400Regular',
   laoMedium: 'NotoSansLao_600SemiBold',
 } as const;
+
+/**
+ * Spread onto any <Text> that shows figures (salaries, times, codes, counts)
+ * so every digit is the same width — columns and totals line up regardless of
+ * the values. Harmless on non-numeric text.
+ */
+export const tabularNums: { fontVariant: ['tabular-nums'] } = { fontVariant: ['tabular-nums'] };
 
 export function headingFont(lang: 'en' | 'lo'): string {
   return lang === 'lo' ? fontFamily.laoMedium : fontFamily.headingEn;

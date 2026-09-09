@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ScreenContainer } from '@/components/ScreenContainer';
 import { Body, Card, Divider, ErrorNote, Heading, Kicker, Muted, PrimaryButton, SecondaryButton, StatCell, StatRow, Tag, Toast } from '@/components/ui';
 import { Icon } from '@/components/Icon';
+import { MissedPunchModal } from '@/components/MissedPunchModal';
 import { useLanguage } from '@/state/LanguageContext';
 import { attendanceApi } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
-import type { AttendanceSummary } from '@/api/types';
+import type { AttendanceSummary, CorrectionStatus } from '@/api/types';
 import { useGeofence } from '@/hooks/useGeofence';
 import { color, headingFont, bodyFont } from '@/theme/tokens';
 import { elapsedClock, formatDateWeekdayShort, hhmm, hoursMinutes, lak, minutesToClock } from '@/lib/format';
@@ -18,11 +19,16 @@ export function AttendanceScreen() {
   const qc = useQueryClient();
   const [toast, setToast] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+  const [punchOpen, setPunchOpen] = useState(false);
 
   const officeQ = useQuery({ queryKey: ['office'], queryFn: () => attendanceApi.office().then((r) => r.office) });
   const todayQ = useQuery({ queryKey: ['attendance', 'today'], queryFn: () => attendanceApi.today() });
   const summaryQ = useQuery({ queryKey: ['attendance', 'summary'], queryFn: attendanceApi.summary });
   const historyQ = useQuery({ queryKey: ['attendance', 'history'], queryFn: () => attendanceApi.history(4).then((r) => r.records) });
+  const correctionsQ = useQuery({
+    queryKey: ['attendance', 'corrections'],
+    queryFn: () => attendanceApi.myCorrections().then((r) => r.corrections),
+  });
 
   const geo = useGeofence(officeQ.data);
 
@@ -208,6 +214,37 @@ export function AttendanceScreen() {
       ) : null}
 
       <View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <Heading>{t('myCorrections')}</Heading>
+        </View>
+        {(correctionsQ.data ?? []).length > 0 ? (
+          <Card style={{ padding: 0, marginBottom: 10 }}>
+            {(correctionsQ.data ?? []).map((c, i) => {
+              const statusKey: Record<CorrectionStatus, 'pending' | 'approved' | 'rejected'> = {
+                PENDING: 'pending',
+                APPROVED: 'approved',
+                REJECTED: 'rejected',
+              };
+              const variant = c.status === 'APPROVED' ? 'accent' : c.status === 'REJECTED' ? 'neutral' : 'outline';
+              const times = [c.checkInAt ? `${t('inShort')} ${hhmm(c.checkInAt)}` : null, c.checkOutAt ? `${t('outShort')} ${hhmm(c.checkOutAt)}` : null]
+                .filter(Boolean)
+                .join(' · ');
+              return (
+                <View key={c.id} style={{ padding: 12, paddingHorizontal: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: i === 0 ? 0 : 1, borderTopColor: color.divider }}>
+                  <View style={{ flexShrink: 1 }}>
+                    <Body style={{ fontSize: 13 }}>{formatDateWeekdayShort(c.date, lang)}</Body>
+                    <Muted style={{ marginTop: 2, fontSize: 11 }}>{times || c.reason}</Muted>
+                  </View>
+                  <Tag label={t(statusKey[c.status])} variant={variant} />
+                </View>
+              );
+            })}
+          </Card>
+        ) : null}
+        <SecondaryButton label={t('reportMissedPunch')} onPress={() => setPunchOpen(true)} />
+      </View>
+
+      <View>
         <Heading style={{ marginBottom: 8 }}>{t('recentDays')}</Heading>
         <Card style={{ padding: 0 }}>
           {(historyQ.data ?? []).map((r, i) => {
@@ -233,6 +270,7 @@ export function AttendanceScreen() {
       </View>
 
       {(checkInMut.isError && checkInMut.error instanceof ApiError) ? <ErrorNote message={checkInMut.error.message} /> : null}
+      <MissedPunchModal visible={punchOpen} onClose={() => setPunchOpen(false)} onDone={flash} />
       {toast ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 8 }}><Toast message={toast} /></View> : null}
     </ScreenContainer>
   );

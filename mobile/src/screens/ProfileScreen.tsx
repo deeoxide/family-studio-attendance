@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScreenContainer } from '@/components/ScreenContainer';
-import { Card, Muted, SecondaryButton } from '@/components/ui';
+import { Card, Muted, PrimaryButton, SecondaryButton, Toast } from '@/components/ui';
+import { TextField } from '@/components/Field';
+import { DateField } from '@/components/DateField';
 import { useAuth } from '@/state/AuthContext';
 import { useLanguage } from '@/state/LanguageContext';
-import { officeApi } from '@/api/endpoints';
+import { officeApi, authApi } from '@/api/endpoints';
+import { ApiError } from '@/api/client';
+import type { UpdateMeInput } from '@/api/types';
 import { color, headingFont, bodyFont, radius } from '@/theme/tokens';
-import { pick } from '@/lib/format';
+import { pick, formatDateShort } from '@/lib/format';
 
 const PREFS_KEY = 'attendance.prefs';
 type PrefKey = 'late' | 'payslip' | 'holiday';
 const DEFAULT_PREFS: Record<PrefKey, boolean> = { late: true, payslip: true, holiday: false };
 
 export function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshMe } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const officeQ = useQuery({ queryKey: ['office'], queryFn: () => officeApi.get().then((r) => r.office) });
   const [prefs, setPrefs] = useState<Record<PrefKey, boolean>>(DEFAULT_PREFS);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(PREFS_KEY).then((raw) => {
@@ -34,6 +39,11 @@ export function ProfileScreen() {
     const next = { ...prefs, [key]: !prefs[key] };
     setPrefs(next);
     AsyncStorage.setItem(PREFS_KEY, JSON.stringify(next)).catch(() => {});
+  };
+
+  const flash = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2600);
   };
 
   const office = officeQ.data;
@@ -58,6 +68,8 @@ export function ProfileScreen() {
           <Muted style={{ marginTop: 2 }}>{`${pick(lang, user.roleTitleEn, user.roleTitleLo)} · ID ${user.employeeCode}`}</Muted>
         </View>
       </View>
+
+      <PersonalInfoCard onSaved={refreshMe} onFlash={flash} />
 
       {office ? (
         <Card style={{ padding: 0 }}>
@@ -105,6 +117,102 @@ export function ProfileScreen() {
       </Card>
 
       <SecondaryButton label={t('signOut')} onPress={logout} />
+      {toast ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 8 }}><Toast message={toast} /></View> : null}
     </ScreenContainer>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string | null }) {
+  const { t } = useLanguage();
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: color.divider }}>
+      <Muted style={{ fontSize: 12 }}>{label}</Muted>
+      <Text style={{ fontSize: 12.5, color: value ? color.text : color.neutral500, flexShrink: 1, textAlign: 'right' }}>
+        {value || t('notSet')}
+      </Text>
+    </View>
+  );
+}
+
+function PersonalInfoCard({ onSaved, onFlash }: { onSaved: () => Promise<void>; onFlash: (m: string) => void }) {
+  const { user } = useAuth();
+  const { lang, t } = useLanguage();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<Required<UpdateMeInput>>({
+    phone: '',
+    address: '',
+    dateOfBirth: '',
+    nationalId: '',
+    bankAccount: '',
+  });
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        phone: user.phone ?? '',
+        address: user.address ?? '',
+        dateOfBirth: user.dateOfBirth ?? '',
+        nationalId: user.nationalId ?? '',
+        bankAccount: user.bankAccount ?? '',
+      });
+    }
+  }, [user, editing]);
+
+  const saveMut = useMutation({
+    mutationFn: () => authApi.updateMe(form),
+    onSuccess: async () => {
+      await onSaved();
+      setEditing(false);
+      onFlash(t('savedToast'));
+    },
+    onError: (e) => onFlash(e instanceof ApiError ? e.message : t('errorGeneric')),
+  });
+
+  if (!user) return null;
+  const set = (k: keyof UpdateMeInput) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <Card style={{ padding: 0 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: color.divider }}>
+        <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: color.neutral700 }}>{t('personalInfo')}</Text>
+        {!editing ? (
+          <Pressable onPress={() => setEditing(true)} hitSlop={10}>
+            <Text style={{ fontSize: 12, color: color.accent700 }}>{t('edit')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      <View style={{ padding: 16, paddingTop: 12 }}>
+        {editing ? (
+          <>
+            <TextField label={t('phone')} value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" />
+            <TextField label={t('address')} value={form.address} onChangeText={set('address')} multiline />
+            <View style={{ marginBottom: 14 }}>
+              <DateField label={t('dateOfBirth')} value={form.dateOfBirth || '1990-01-01'} onChange={set('dateOfBirth')} />
+            </View>
+            <TextField label={t('nationalId')} value={form.nationalId} onChangeText={set('nationalId')} autoCapitalize="none" />
+            <TextField label={t('bankAccount')} value={form.bankAccount} onChangeText={set('bankAccount')} autoCapitalize="none" />
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 2 }}>
+              <View style={{ flex: 1 }}>
+                <SecondaryButton label={t('cancel')} onPress={() => setEditing(false)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <PrimaryButton label={t('saveChanges')} onPress={() => saveMut.mutate()} loading={saveMut.isPending} />
+              </View>
+            </View>
+          </>
+        ) : (
+          <>
+            <InfoRow label={t('phone')} value={user.phone} />
+            <InfoRow label={t('address')} value={user.address} />
+            <InfoRow label={t('dateOfBirth')} value={user.dateOfBirth ? formatDateShort(user.dateOfBirth, lang) : null} />
+            <InfoRow label={t('nationalId')} value={user.nationalId} />
+            <InfoRow label={t('bankAccount')} value={user.bankAccount} />
+            <InfoRow label={t('startDate')} value={user.startDate ? formatDateShort(user.startDate, lang) : null} />
+            <Muted style={{ fontSize: 10.5, marginTop: 8 }}>{t('hrOnlyNote')}</Muted>
+          </>
+        )}
+      </View>
+    </Card>
   );
 }

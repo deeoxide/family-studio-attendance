@@ -1,8 +1,10 @@
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { ScreenContainer } from '@/components/ScreenContainer';
-import { Body, Card, Heading, Muted, StatCell, StatRow, Tag } from '@/components/ui';
+import { Body, Card, Heading, Muted, Segmented, StatCell, StatRow, Tag } from '@/components/ui';
+import { Icon } from '@/components/Icon';
+import { PunctualityBoard } from '@/components/PunctualityBoard';
 import { useLanguage } from '@/state/LanguageContext';
 import { attendanceApi } from '@/api/endpoints';
 import { color, headingFont } from '@/theme/tokens';
@@ -10,8 +12,9 @@ import { hhmm, pick } from '@/lib/format';
 import { formatDateLong } from '@/lib/format';
 import { todayISODate } from '@/lib/date';
 
-export function TeamScreen() {
+export function TeamScreen({ navigation }: any) {
   const { lang, t } = useLanguage();
+  const [tab, setTab] = useState<'roll' | 'kpi'>('roll');
   const teamQ = useQuery({ queryKey: ['attendance', 'team-today'], queryFn: () => attendanceApi.teamToday().then((r) => r.team) });
 
   const team = teamQ.data ?? [];
@@ -21,6 +24,19 @@ export function TeamScreen() {
 
   return (
     <ScreenContainer title={t('tabTeam')}>
+      <Segmented
+        value={tab}
+        onChange={setTab}
+        options={[
+          { key: 'roll', label: t('rollToday') },
+          { key: 'kpi', label: t('punctualityKpi') },
+        ]}
+      />
+
+      {tab === 'kpi' ? (
+        <PunctualityBoard onOpenPerson={(id) => navigation.navigate('PersonDetail', { id })} />
+      ) : (
+        <>
       <StatRow>
         <StatCell value={present} label={t('present')} />
         <StatCell value={late} label={t('late')} valueColor={color.accent700} />
@@ -43,7 +59,11 @@ export function TeamScreen() {
               ? `${hhmm(m.checkInAt)} · ${m.distance != null ? Math.round(m.distance) : '—'} m`
               : '—';
             return (
-              <View key={m.user.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, paddingHorizontal: 16, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: color.divider }}>
+              <Pressable
+                key={m.user.id}
+                onPress={() => navigation.navigate('PersonDetail', { id: m.user.id })}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, paddingHorizontal: 16, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: color.divider }}
+              >
                 <View style={{ width: 34, height: 34, borderRadius: 17, borderWidth: 1, borderColor: color.divider, backgroundColor: color.neutral100, alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={{ fontFamily: headingFont('en'), fontWeight: '600', fontSize: 12, color: color.neutral800 }}>{m.user.initials}</Text>
                 </View>
@@ -52,7 +72,8 @@ export function TeamScreen() {
                   <Muted style={{ marginTop: 2, fontSize: 11 }}>{detail}</Muted>
                 </View>
                 <Tag label={status} variant={variant as any} />
-              </View>
+                <Icon name="chevronRight" size={15} color={color.neutral500} />
+              </Pressable>
             );
           })}
           {team.length === 0 ? (
@@ -62,6 +83,8 @@ export function TeamScreen() {
           ) : null}
         </Card>
       </View>
+        </>
+      )}
     </ScreenContainer>
   );
 }

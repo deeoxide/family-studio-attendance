@@ -1,5 +1,13 @@
 import { color } from '@/theme/tokens';
 import type { StringKey } from '@/i18n/strings';
+import type { PunctualityLevel } from '@/api/types';
+
+/** Traffic-light colours + label for a punctuality level. */
+export function levelStyle(level: PunctualityLevel): { dot: string; bg: string; border: string; fg: string; labelKey: StringKey } {
+  if (level === 'red') return { dot: color.danger, bg: color.dangerBg, border: color.dangerBorder, fg: color.danger, labelKey: 'punctRed' };
+  if (level === 'yellow') return { dot: color.warn, bg: color.warnBg, border: color.accent200, fg: color.accent800, labelKey: 'punctYellow' };
+  return { dot: color.ok, bg: color.okBg, border: color.okBorder, fg: color.ok, labelKey: 'punctGreen' };
+}
 
 export interface PunctualityStyle {
   headlineKey: StringKey;

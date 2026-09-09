@@ -8,21 +8,21 @@ import {
   View,
   ViewProps,
 } from 'react-native';
-import { color, radius, shadow, headingFont, bodyFont } from '@/theme/tokens';
+import { color, radius, shadow, headingFont, bodyFont, tabularNums } from '@/theme/tokens';
 import { useLanguage } from '@/state/LanguageContext';
 
 // ── Text ──────────────────────────────────────────────────────────────────
 
 export function Body({ style, ...props }: TextProps) {
   const { lang } = useLanguage();
-  return <Text style={[{ fontFamily: bodyFont(lang), color: color.text, fontSize: 14 }, style]} {...props} />;
+  return <Text style={[{ fontFamily: bodyFont(lang), color: color.text, fontSize: 14 }, tabularNums, style]} {...props} />;
 }
 
 export function Heading({ style, ...props }: TextProps) {
   const { lang } = useLanguage();
   return (
     <Text
-      style={[{ fontFamily: headingFont(lang), color: color.text, fontSize: 17, fontWeight: lang === 'lo' ? '600' : undefined }, style]}
+      style={[{ fontFamily: headingFont(lang), color: color.text, fontSize: 17, fontWeight: lang === 'lo' ? '600' : undefined }, tabularNums, style]}
       {...props}
     />
   );
@@ -38,7 +38,7 @@ export function Kicker({ style, children, ...props }: TextProps) {
 
 export function Muted({ style, ...props }: TextProps) {
   const { lang } = useLanguage();
-  return <Text style={[{ fontFamily: bodyFont(lang), color: color.neutral700, fontSize: 11.5, lineHeight: 17 }, style]} {...props} />;
+  return <Text style={[{ fontFamily: bodyFont(lang), color: color.neutral700, fontSize: 11.5, lineHeight: 17 }, tabularNums, style]} {...props} />;
 }
 
 // ── Layout ────────────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ export function StatCell({ value, label, valueColor }: { value: string | number;
   const { lang } = useLanguage();
   return (
     <View style={{ flex: 1, paddingVertical: 14, alignItems: 'center' }}>
-      <Text style={{ fontFamily: headingFont(lang), fontSize: 28, color: valueColor ?? color.text }}>{value}</Text>
+      <Text style={[{ fontFamily: headingFont(lang), fontSize: 28, color: valueColor ?? color.text }, tabularNums]}>{value}</Text>
       <Muted style={{ marginTop: 5, fontSize: 10.5 }}>{label}</Muted>
     </View>
   );

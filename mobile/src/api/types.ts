@@ -2,8 +2,20 @@ export type Role = 'EMPLOYEE' | 'MANAGER' | 'HR' | 'ADMIN';
 export type LeaveType = 'ANNUAL' | 'SICK' | 'PERSONAL';
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PayslipStatus = 'OPEN' | 'PAID';
+export type CorrectionStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type PunctualityLevel = 'green' | 'yellow' | 'red';
 
-export interface User {
+/** Personal information carried on every user / person record. */
+export interface PersonalInfo {
+  phone: string | null;
+  address: string | null;
+  dateOfBirth: string | null;
+  startDate: string | null;
+  nationalId: string | null;
+  bankAccount: string | null;
+}
+
+export interface User extends PersonalInfo {
   id: string;
   email: string;
   employeeCode: string;
@@ -14,6 +26,15 @@ export interface User {
   initials: string;
   role: Role;
   managerId: string | null;
+}
+
+/** What the signed-in user may edit on their own Profile. */
+export interface UpdateMeInput {
+  phone?: string;
+  address?: string;
+  dateOfBirth?: string;
+  nationalId?: string;
+  bankAccount?: string;
 }
 
 export interface Office {
@@ -131,7 +152,7 @@ export interface PayrollRun {
   rows: PayrollRunRow[];
 }
 
-export interface PersonRow {
+export interface PersonRow extends PersonalInfo {
   id: string;
   email: string;
   employeeCode: string;
@@ -146,6 +167,72 @@ export interface PersonRow {
   otAmount: number;
   managerId: string | null;
   annualLeaveLeft: number;
+  // Current-month punctuality + this-year leave, from the server.
+  lateCount: number;
+  punctuality: PunctualityLevel;
+  lateDeduction: number;
+  leftEarlyCount: number;
+  leaveDaysYtd: number;
+}
+
+export interface PeopleList {
+  people: PersonRow[];
+  canManage: boolean;
+  canAdminister: boolean;
+  periodMonth: string;
+}
+
+export interface KpiRow {
+  user: { id: string; nameEn: string; nameLo: string; initials: string; roleTitleEn: string; roleTitleLo: string };
+  lateCount: number;
+  level: PunctualityLevel;
+  lateDeduction: number;
+  halfSalary: boolean;
+  leftEarlyCount: number;
+  leaveDaysYtd: number;
+}
+
+export interface KpiBoard {
+  periodMonth: string;
+  rows: KpiRow[];
+  totals: { green: number; yellow: number; red: number; lateDays: number; lateDeduction: number };
+}
+
+export interface PunctualityDetail {
+  periodMonth: string;
+  lateCount: number;
+  level: PunctualityLevel;
+  lateDeduction: number;
+  halfSalary: boolean;
+  warned: boolean;
+  leftEarlyCount: number;
+  leaveDaysYtd: number;
+  lateRows: LateDayRow[];
+}
+
+export interface LeaveEntitlement {
+  leaveType: LeaveType;
+  year: number;
+  totalDays: number;
+}
+
+export interface PersonDetail {
+  person: PersonRow;
+  leaveBalances: LeaveEntitlement[];
+  punctuality: PunctualityDetail;
+  canAdminister: boolean;
+}
+
+export interface AttendanceCorrection {
+  id: string;
+  userId: string;
+  date: string;
+  checkInAt: string | null;
+  checkOutAt: string | null;
+  reason: string;
+  status: CorrectionStatus;
+  createdAt: string;
+  user?: { nameEn: string; nameLo: string; initials: string };
 }
 
 export interface RegisterEmployeeInput {
@@ -161,11 +248,30 @@ export interface RegisterEmployeeInput {
   otAmount?: number;
   managerId?: string;
   employeeCode?: string;
+  phone?: string;
+  address?: string;
+  dateOfBirth?: string;
+  startDate?: string;
+  nationalId?: string;
+  bankAccount?: string;
 }
 
+/**
+ * Fields on a person's record. Managers may send the "personal" ones for a
+ * direct report; the rest need HR/Admin and the server rejects them otherwise.
+ */
 export interface UpdateEmployeeInput {
   nameEn?: string;
   nameLo?: string;
+  initials?: string;
+  phone?: string | null;
+  address?: string | null;
+  dateOfBirth?: string | null;
+  nationalId?: string | null;
+  bankAccount?: string | null;
+  // HR / Admin only:
+  email?: string;
+  employeeCode?: string;
   roleTitleEn?: string;
   roleTitleLo?: string;
   role?: Role;
@@ -173,4 +279,5 @@ export interface UpdateEmployeeInput {
   allowance?: number;
   otAmount?: number;
   managerId?: string | null;
+  startDate?: string | null;
 }
