@@ -9,9 +9,9 @@ datasource db {
 
 // SQLite has no native enum type, so roles/types/statuses are plain strings
 // here, constrained by the zod schemas in src/lib and src/routes instead:
-//   Role: "EMPLOYEE" | "MANAGER" | "HR"
+//   Role: "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN"
 //   LeaveType: "ANNUAL" | "SICK" | "PERSONAL"
-//   LeaveStatus: "PENDING" | "APPROVED" | "REJECTED"
+//   LeaveStatus / CorrectionStatus: "PENDING" | "APPROVED" | "REJECTED"
 //   PayslipStatus: "OPEN" | "PAID"
 
 /// Single workplace geofence + shift rule config. Seeded with one row (Family Studio)
@@ -52,11 +52,42 @@ model User {
   reports      User[]   @relation("ManagerReports")
   createdAt    DateTime @default(now())
 
-  attendance    AttendanceRecord[]
-  leaveBalances LeaveBalance[]
-  leaveRequests LeaveRequest[]     @relation("Requester")
-  decisions     LeaveRequest[]     @relation("Decider")
-  payslips      Payslip[]
+  // Personal information. All optional. The employee maintains their own from the
+  // Profile screen (except startDate, which HR/Admin set); HR/Admin may edit anyone's,
+  // a manager may edit their direct reports'.
+  phone         String? // mobile number
+  address       String? // home address
+  dateOfBirth   String? // YYYY-MM-DD
+  startDate     String? // YYYY-MM-DD, date of first employment
+  nationalId    String? // ID card / passport number
+  bankAccount   String? // bank account number for payroll
+
+  attendance            AttendanceRecord[]
+  attendanceCorrections AttendanceCorrection[] @relation("CorrectionRequester")
+  correctionDecisions   AttendanceCorrection[] @relation("CorrectionDecider")
+  leaveBalances         LeaveBalance[]
+  leaveRequests         LeaveRequest[]         @relation("Requester")
+  decisions             LeaveRequest[]         @relation("Decider")
+  payslips              Payslip[]
+}
+
+/// An employee's request to fix a missed or wrong check-in/out for one past day.
+/// Approved by their manager, HR, or Admin; on approval the AttendanceRecord is
+/// written and late-minutes recomputed. HR/Admin can also edit records directly
+/// without a request (see PUT /api/attendance/manual).
+model AttendanceCorrection {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("CorrectionRequester", fields: [userId], references: [id])
+  date        String // YYYY-MM-DD, the day being corrected
+  checkInAt   DateTime? // requested check-in, null to leave unchanged
+  checkOutAt  DateTime? // requested check-out, null to leave unchanged
+  reason      String    @default("")
+  status      String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  decidedById String?
+  decidedBy   User?     @relation("CorrectionDecider", fields: [decidedById], references: [id])
+  decidedAt   DateTime?
+  createdAt   DateTime  @default(now())
 }
 
 model AttendanceRecord {
