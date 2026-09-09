@@ -5,7 +5,7 @@ import { requireRole } from '../../middleware/auth';
 import { lateMinutesFor } from '../../lib/shift';
 import { vientianeWallClock, todayISO } from '../../lib/period';
 import { requireOffice } from '../../lib/office';
-import { assertCanManage } from '../../middleware/loadTarget';
+import { assertCanManage, loadTarget } from '../../middleware/loadTarget';
 import { scopedTeamIds } from '../../middleware/scopedTeam';
 import { parse } from '../../http/validate';
 import { conflict, notFound, unprocessable } from '../../http/errors';
@@ -70,6 +70,27 @@ correctionsRouter.put('/manual', requireRole('HR', 'ADMIN'), async (req, res) =>
   );
   res.json({ record });
 });
+
+/**
+ * GPS audit trail for one employee — every accepted clock-in / clock-out with
+ * the raw fix and the distance the server computed. Manager (their reports) or
+ * HR / Admin (anyone). Powers "prove where the punch came from" for disputes.
+ */
+correctionsRouter.get(
+  '/logs/:userId',
+  requireRole('MANAGER', 'HR', 'ADMIN'),
+  loadTarget('userId', 'view'),
+  async (req, res) => {
+    const raw = Number(req.query.limit);
+    const limit = Number.isFinite(raw) ? Math.max(1, Math.min(100, raw)) : 30;
+    const logs = await prisma.attendanceLog.findMany({
+      where: { userId: req.target!.id },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+    res.json({ logs });
+  },
+);
 
 const correctionSchema = z.object({
   date: isoDate,

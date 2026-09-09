@@ -25,8 +25,15 @@ async function requireInsideGeofence(body: unknown) {
   if (distance > office.radiusM) {
     throw unprocessable('Outside the check-in radius', { distance });
   }
-  return { office, distance };
+  return { office, lat, lng, distance };
 }
+
+/** Append-only GPS audit row for one accepted punch. */
+type Fix = { office: { id: string }; lat: number; lng: number; distance: number };
+const logPunch = (userId: string, type: 'CHECK_IN' | 'CHECK_OUT', fix: Fix) =>
+  prisma.attendanceLog.create({
+    data: { userId, officeId: fix.office.id, type, lat: fix.lat, lng: fix.lng, distanceM: fix.distance },
+  });
 
 const recordForToday = (userId: string) =>
   prisma.attendanceRecord.findUnique({ where: { userId_date: { userId, date: todayISO() } } });
@@ -44,7 +51,8 @@ punchRouter.get('/today', async (req, res) => {
 });
 
 punchRouter.post('/check-in', async (req, res) => {
-  const { office, distance } = await requireInsideGeofence(req.body);
+  const fix = await requireInsideGeofence(req.body);
+  const { office, distance } = fix;
 
   const date = todayISO();
   const existing = await recordForToday(req.user!.id);
@@ -54,26 +62,33 @@ punchRouter.post('/check-in', async (req, res) => {
 
   const now = new Date();
   const lateMinutes = lateMinutesFor(now, { graceEndMin: office.graceEndMin, lunchMinutes: 0 });
-  const record = await prisma.attendanceRecord.upsert({
-    where: { userId_date: { userId: req.user!.id, date } },
-    create: { userId: req.user!.id, date, checkInAt: now, checkInDistanceM: distance, lateMinutes },
-    update: { checkInAt: now, checkInDistanceM: distance, lateMinutes },
-  });
+  const [record] = await prisma.$transaction([
+    prisma.attendanceRecord.upsert({
+      where: { userId_date: { userId: req.user!.id, date } },
+      create: { userId: req.user!.id, date, checkInAt: now, checkInDistanceM: distance, lateMinutes },
+      update: { checkInAt: now, checkInDistanceM: distance, lateMinutes },
+    }),
+    logPunch(req.user!.id, 'CHECK_IN', fix),
+  ]);
   res.json({ record, distance });
 });
 
 punchRouter.post('/check-out', async (req, res) => {
-  const { office, distance } = await requireInsideGeofence(req.body);
+  const fix = await requireInsideGeofence(req.body);
+  const { office, distance } = fix;
 
   const existing = await recordForToday(req.user!.id);
   if (!existing?.checkInAt) throw conflict('Not checked in yet');
   if (existing.checkOutAt) throw conflict('Already checked out today', { record: existing });
 
   const now = new Date();
-  const record = await prisma.attendanceRecord.update({
-    where: { id: existing.id },
-    data: { checkOutAt: now, checkOutDistanceM: distance },
-  });
+  const [record] = await prisma.$transaction([
+    prisma.attendanceRecord.update({
+      where: { id: existing.id },
+      data: { checkOutAt: now, checkOutDistanceM: distance },
+    }),
+    logPunch(req.user!.id, 'CHECK_OUT', fix),
+  ]);
   res.json({
     record,
     distance,

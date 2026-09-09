@@ -64,6 +64,18 @@ export interface AttendanceRecord {
   lateMinutes: number;
 }
 
+/** One accepted GPS clock-in / clock-out, kept for dispute resolution. */
+export interface AttendanceLog {
+  id: string;
+  userId: string;
+  officeId: string;
+  type: 'CHECK_IN' | 'CHECK_OUT';
+  lat: number;
+  lng: number;
+  distanceM: number;
+  createdAt: string;
+}
+
 export interface LateDayRow {
   date: string;
   lateMinutes: number;

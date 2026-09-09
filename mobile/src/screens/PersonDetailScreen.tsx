@@ -9,11 +9,11 @@ import { RecordLeaveModal } from '@/components/RecordLeaveModal';
 import { CorrectAttendanceModal } from '@/components/CorrectAttendanceModal';
 import { Icon } from '@/components/Icon';
 import { useLanguage } from '@/state/LanguageContext';
-import { peopleApi } from '@/api/endpoints';
+import { peopleApi, attendanceApi } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
-import type { LeaveType, Role, UpdateEmployeeInput } from '@/api/types';
+import type { AttendanceLog, LeaveType, Role, UpdateEmployeeInput } from '@/api/types';
 import { color, headingFont, tabularNums } from '@/theme/tokens';
-import { pick, lak, formatDateWeekdayShort } from '@/lib/format';
+import { pick, lak, hhmm, formatDateWeekdayShort } from '@/lib/format';
 import { levelStyle } from '@/lib/punctuality';
 import { periodLabel } from '@/lib/period';
 import type { PunctualityDetail } from '@/api/types';
@@ -84,6 +84,8 @@ export function PersonDetailScreen({ route, navigation }: any) {
             />
           ) : null}
 
+          <GpsLogCard personId={id} />
+
           <View style={{ gap: 10 }}>
             <PrimaryButton label={t('recordLeave')} onPress={() => setRecordOpen(true)} />
             {canAdminister ? <SecondaryButton label={t('correctAttendance')} onPress={() => setCorrectOpen(true)} /> : null}
@@ -108,6 +110,40 @@ export function PersonDetailScreen({ route, navigation }: any) {
       )}
       {toast ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 8 }}><Toast message={toast} /></View> : null}
     </ScreenContainer>
+  );
+}
+
+/** Recent accepted GPS clock-ins / clock-outs, with the distance the server computed. */
+function GpsLogCard({ personId }: { personId: string }) {
+  const { lang, t } = useLanguage();
+  const logsQ = useQuery({
+    queryKey: ['attendanceLogs', personId],
+    queryFn: () => attendanceApi.logs(personId).then((r) => r.logs),
+  });
+  const logs = logsQ.data ?? [];
+
+  return (
+    <Card>
+      <Text style={{ fontFamily: headingFont('en'), fontWeight: '600', fontSize: 15, color: color.text, marginBottom: 8 }}>
+        {t('gpsLog')}
+      </Text>
+      {logsQ.isLoading ? (
+        <LoadingBlock />
+      ) : logs.length === 0 ? (
+        <Muted>{t('gpsLogEmpty')}</Muted>
+      ) : (
+        <View style={{ gap: 7 }}>
+          {logs.map((l: AttendanceLog) => (
+            <View key={l.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <Body style={{ fontSize: 13 }}>
+                {t(l.type === 'CHECK_IN' ? 'inShort' : 'outShort')} · {formatDateWeekdayShort(l.createdAt, lang)} {hhmm(l.createdAt)}
+              </Body>
+              <Muted style={{ ...tabularNums }}>{Math.round(l.distanceM)} m</Muted>
+            </View>
+          ))}
+        </View>
+      )}
+    </Card>
   );
 }
 

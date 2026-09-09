@@ -1,6 +1,7 @@
 import { api } from './client';
 import type {
   AttendanceCorrection,
+  AttendanceLog,
   AttendanceRecord,
   AttendanceSummary,
   Holiday,
@@ -65,6 +66,10 @@ export const attendanceApi = {
   // HR / Admin: direct edit, no request
   setManual: (input: { userId: string; date: string; checkIn?: string | null; checkOut?: string | null }) =>
     api.put<{ record: AttendanceRecord }>('/api/attendance/manual', input),
+
+  /** GPS audit trail for one employee (Manager: their reports · HR/Admin: anyone). */
+  logs: (userId: string, limit = 30) =>
+    api.get<{ logs: AttendanceLog[] }>(`/api/attendance/logs/${userId}?limit=${limit}`),
 };
 
 export const leaveApi = {
