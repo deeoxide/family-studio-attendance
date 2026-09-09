@@ -16,6 +16,18 @@ export function hhmm(iso: string | null): string {
   return new Date(iso).toLocaleTimeString('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
+/** Vientiane-local "Wed 9 Sept, 09:41" from a full ISO timestamp. */
+export function formatTimestamp(iso: string, lang: Lang): string {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString(lang === 'lo' ? 'lo-LA' : 'en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: TZ,
+  });
+  return `${day}, ${hhmm(iso)}`;
+}
+
 export function pad2(n: number): string {
   return String(n).padStart(2, '0');
 }

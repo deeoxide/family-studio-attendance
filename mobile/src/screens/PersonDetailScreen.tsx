@@ -13,7 +13,7 @@ import { peopleApi, attendanceApi } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
 import type { AttendanceLog, LeaveType, Role, UpdateEmployeeInput } from '@/api/types';
 import { color, headingFont, tabularNums } from '@/theme/tokens';
-import { pick, lak, hhmm, formatDateWeekdayShort } from '@/lib/format';
+import { pick, lak, formatDateWeekdayShort, formatTimestamp } from '@/lib/format';
 import { levelStyle } from '@/lib/punctuality';
 import { periodLabel } from '@/lib/period';
 import type { PunctualityDetail } from '@/api/types';
@@ -136,7 +136,7 @@ function GpsLogCard({ personId }: { personId: string }) {
           {logs.map((l: AttendanceLog) => (
             <View key={l.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <Body style={{ fontSize: 13 }}>
-                {t(l.type === 'CHECK_IN' ? 'inShort' : 'outShort')} · {formatDateWeekdayShort(l.createdAt, lang)} {hhmm(l.createdAt)}
+                {t(l.type === 'CHECK_IN' ? 'inShort' : 'outShort')} · {formatTimestamp(l.createdAt, lang)}
               </Body>
               <Muted style={{ ...tabularNums }}>{Math.round(l.distanceM)} m</Muted>
             </View>
