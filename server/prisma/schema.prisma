@@ -13,6 +13,7 @@ datasource db {
 //   LeaveType: "ANNUAL" | "SICK" | "PERSONAL"
 //   LeaveStatus / CorrectionStatus: "PENDING" | "APPROVED" | "REJECTED"
 //   PayslipStatus: "OPEN" | "PAID"
+//   AttendanceLog.type: "CHECK_IN" | "CHECK_OUT"
 
 /// Single workplace geofence + shift rule config. Seeded with one row (Family Studio)
 /// but modelled as a table so HR tooling can edit it later without a schema change.
@@ -31,6 +32,27 @@ model Office {
   lunchEndMin   Int      @default(810) // 13:30
   workDays      String   @default("1,2,3,4,5") // Mon-Fri, 0=Sun
   updatedAt     DateTime @updatedAt
+
+  attendanceLogs AttendanceLog[]
+}
+
+/// Append-only audit trail: one row per successful clock-in / clock-out, with the
+/// raw GPS fix and the distance the server computed from it. AttendanceRecord
+/// keeps the day's summary (times, late minutes); this keeps the full history for
+/// disputes ("the app said I was 23 m away").
+model AttendanceLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  officeId  String
+  office    Office   @relation(fields: [officeId], references: [id])
+  type      String // CHECK_IN | CHECK_OUT
+  lat       Float
+  lng       Float
+  distanceM Float // metres from the office, as computed server-side
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model User {
@@ -63,6 +85,7 @@ model User {
   bankAccount   String? // bank account number for payroll
 
   attendance            AttendanceRecord[]
+  attendanceLogs        AttendanceLog[]
   attendanceCorrections AttendanceCorrection[] @relation("CorrectionRequester")
   correctionDecisions   AttendanceCorrection[] @relation("CorrectionDecider")
   leaveBalances         LeaveBalance[]

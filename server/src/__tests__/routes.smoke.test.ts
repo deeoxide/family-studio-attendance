@@ -211,6 +211,25 @@ describe('attendance — corrections workflow', () => {
     expect(res.status).toBe(200);
     expect(res.body.record.date).toBe('2026-08-10');
   });
+
+  it('GET /api/attendance/logs/:userId — the GPS audit trail written by check-in / check-out', async () => {
+    // the "check-in then check-out" test above ran for otherEmployee at the office coords
+    const noyId = id[ACCOUNTS.otherEmployee];
+
+    expect((await authed('get', `/api/attendance/logs/${noyId}`, t.employee)).status).toBe(403);
+    expect((await authed('get', `/api/attendance/logs/${noyId}`, t.manager).query({ limit: -1 })).status).toBe(200);
+    expect((await authed('get', `/api/attendance/logs/${id[ACCOUNTS.hr]}`, t.manager)).status).toBe(403); // outside team
+
+    const res = await authed('get', `/api/attendance/logs/${noyId}`, t.hr);
+    expect(res.status).toBe(200);
+    const types = res.body.logs.map((l: { type: string }) => l.type);
+    expect(types).toContain('CHECK_IN');
+    expect(types).toContain('CHECK_OUT');
+    const first = res.body.logs[0];
+    expect(typeof first.lat).toBe('number');
+    expect(typeof first.lng).toBe('number');
+    expect(typeof first.distanceM).toBe('number');
+  });
 });
 
 describe('leave', () => {

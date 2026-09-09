@@ -92,7 +92,7 @@ async function main() {
       addressLo: 'ບ້ານໂພນທັນ, ເມືອງໄຊເສດຖາ, ນະຄອນຫຼວງວຽງຈັນ',
       lat: 17.9890155,
       lng: 102.6368713,
-      radiusM: 10,
+      radiusM: 25, // ~17 m from the XJQP+GPX pin + room for GPS drift
       shiftStartMin: 9 * 60,
       graceEndMin: 9 * 60 + 30,
       shiftEndMin: 18 * 60,
