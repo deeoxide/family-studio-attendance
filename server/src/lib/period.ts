@@ -23,6 +23,11 @@ export function currentPeriodMonth(now: Date = new Date()): string {
   return todayISO(now).slice(0, 7);
 }
 
+/** Current calendar year in Vientiane local time (for "…this year" totals). */
+export function currentYear(now: Date = new Date()): number {
+  return Number(todayISO(now).slice(0, 4));
+}
+
 /** Minutes since local midnight, Vientiane time. */
 export function minutesOfDayVientiane(now: Date = new Date()): number {
   const fmt = new Intl.DateTimeFormat('en-GB', {
@@ -35,8 +40,19 @@ export function minutesOfDayVientiane(now: Date = new Date()): number {
   return h * 60 + m;
 }
 
-export function isSamePeriod(dateISO: string, periodMonth: string): boolean {
-  return dateISO.startsWith(periodMonth);
+/**
+ * A wall-clock time on a given Vientiane calendar day, as a real Date.
+ * Vientiane is UTC+7 year-round (no DST), so H:M there is (H-7):M UTC.
+ * `hhmm` is "HH:MM" (24h). Returns null if either input is malformed.
+ */
+export function vientianeWallClock(dateISO: string, hhmm: string): Date | null {
+  const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateISO);
+  const tm = /^(\d{2}):(\d{2})$/.exec(hhmm);
+  if (!dm || !tm) return null;
+  const [y, mo, d] = [Number(dm[1]), Number(dm[2]), Number(dm[3])];
+  const [h, mi] = [Number(tm[1]), Number(tm[2])];
+  if (h > 23 || mi > 59) return null;
+  return new Date(Date.UTC(y, mo - 1, d, h - 7, mi));
 }
 
 /** Next "YYYY-MM" after the given period. */

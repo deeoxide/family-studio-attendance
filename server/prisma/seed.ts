@@ -24,36 +24,48 @@ const STAFF = [
     nameEn: 'Somchai Keomany', nameLo: 'ສົມໄຊ ແກ້ວມະນີ',
     roleTitleEn: 'Studio manager', roleTitleLo: 'ຜູ້ຈັດການສະຕູດິໂອ',
     basicSalary: 4_500_000, otAmount: 320_000, allowance: 500_000,
+    phone: '020 5511 2233', address: 'Ban Nongbone, Saysettha, Vientiane',
+    dateOfBirth: '1988-02-17', startDate: '2019-03-01', nationalId: '1-88-0217-00042', bankAccount: 'BCEL 040-12-00-01234567-001',
   },
   {
     email: 'phetsamone@familystudio.la', employeeCode: '0201', initials: 'PV', role: 'EMPLOYEE' as const,
     nameEn: 'Phetsamone Vilay', nameLo: 'ເພັດສະໝອນ ວິໄລ',
     roleTitleEn: 'Photographer', roleTitleLo: 'ຊ່າງພາບ',
     basicSalary: 3_800_000, otAmount: 240_000, allowance: 300_000, managerCode: '0142',
+    phone: '020 7722 8899', address: 'Ban Phonsavanh, Sisattanak, Vientiane',
+    dateOfBirth: '1994-09-05', startDate: '2021-06-14', nationalId: '1-94-0905-00318', bankAccount: 'BCEL 040-12-00-07654321-001',
   },
   {
     email: 'noy@familystudio.la', employeeCode: '0202', initials: 'NC', role: 'EMPLOYEE' as const,
     nameEn: 'Noy Chanthavong', nameLo: 'ນ້ອຍ ຈັນທະວົງ',
     roleTitleEn: 'Retoucher', roleTitleLo: 'ຊ່າງແກ້ໄຂພາບ',
     basicSalary: 3_200_000, otAmount: 160_000, allowance: 200_000, managerCode: '0142',
+    phone: '020 9933 4455', address: 'Ban Dongpalane, Sisattanak, Vientiane',
+    dateOfBirth: '1996-11-22', startDate: '2022-01-10', nationalId: '1-96-1122-00577', bankAccount: 'JDB 010-20-00-00223344-002',
   },
   {
     email: 'khamla@familystudio.la', employeeCode: '0203', initials: 'KS', role: 'EMPLOYEE' as const,
     nameEn: 'Khamla Sisouk', nameLo: 'ຄຳລ້າ ສີສຸກ',
     roleTitleEn: 'Front desk', roleTitleLo: 'ພະນັກງານຕ້ອນຮັບ',
     basicSalary: 2_600_000, otAmount: 80_000, allowance: 150_000, managerCode: '0142',
+    phone: '020 2244 6677', address: 'Ban Thatluang, Xaysettha, Vientiane',
+    dateOfBirth: '1999-04-30', startDate: '2023-02-20', nationalId: '1-99-0430-00812', bankAccount: 'BCEL 040-12-00-09112233-001',
   },
   {
     email: 'thongdy@familystudio.la', employeeCode: '0204', initials: 'TL', role: 'EMPLOYEE' as const,
     nameEn: 'Thongdy Latsamy', nameLo: 'ທອງດີ ລັດສະໝີ',
     roleTitleEn: 'Assistant', roleTitleLo: 'ຜູ້ຊ່ວຍ',
     basicSalary: 2_400_000, otAmount: 120_000, allowance: 100_000, managerCode: '0142',
+    phone: '020 5566 7788', address: 'Ban Sokpaluang, Sisattanak, Vientiane',
+    dateOfBirth: '2000-07-08', startDate: '2024-05-06', nationalId: '1-00-0708-01099', bankAccount: 'JDB 010-20-00-00445566-002',
   },
   {
     email: 'manivone@familystudio.la', employeeCode: '0147', initials: 'MV', role: 'HR' as const,
     nameEn: 'Manivone Douangdy', nameLo: 'ມະນີວອນ ດວງດີ',
     roleTitleEn: 'Accounts', roleTitleLo: 'ບັນຊີ',
     basicSalary: 3_000_000, otAmount: 0, allowance: 250_000,
+    phone: '020 7788 1122', address: 'Ban Haysok, Chanthabouly, Vientiane',
+    dateOfBirth: '1990-12-01', startDate: '2020-08-17', nationalId: '1-90-1201-00203', bankAccount: 'BCEL 040-12-00-05566778-001',
   },
 ];
 
@@ -67,6 +79,7 @@ async function main() {
   await prisma.payslip.deleteMany();
   await prisma.leaveRequest.deleteMany();
   await prisma.leaveBalance.deleteMany();
+  await prisma.attendanceCorrection.deleteMany();
   await prisma.attendanceRecord.deleteMany();
   await prisma.user.deleteMany();
   await prisma.holiday.deleteMany();
@@ -109,6 +122,12 @@ async function main() {
         basicSalary: s.basicSalary,
         otAmount: s.otAmount,
         allowance: s.allowance,
+        phone: s.phone,
+        address: s.address,
+        dateOfBirth: s.dateOfBirth,
+        startDate: s.startDate,
+        nationalId: s.nationalId,
+        bankAccount: s.bankAccount,
       },
     });
     byCode[s.employeeCode] = user.id;
@@ -139,6 +158,7 @@ async function main() {
       basicSalary: 0,
       otAmount: 0,
       allowance: 0,
+      startDate: '2019-01-01',
     },
   });
   await prisma.leaveBalance.createMany({
