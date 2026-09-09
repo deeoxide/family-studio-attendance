@@ -27,10 +27,8 @@ for all):
 
 | Email | Role |
 |---|---|
-| somchai@familystudio.la | Manager |
-| phetsamone@familystudio.la | Employee |
-| noy@familystudio.la, khamla@familystudio.la, thongdy@familystudio.la | Employee |
-| manivone@familystudio.la | HR / Admin |
+| deexaypanya0@gmail.com | Manager |
+| Chalounsaypanya@gmai.com | HR / Admin |
 
 Run the unit tests (payroll, punctuality/late-deduction, working-day
 calculator, geofence distance): `npm test`.
