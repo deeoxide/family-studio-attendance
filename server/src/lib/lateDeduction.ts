@@ -8,7 +8,8 @@
  *    (ໃບຕັກເຕືອນ) only — no deduction.
  *  - From the 4th late day, every *started* hour after 09:30 costs 10,000 LAK.
  *  - Arriving more than 2 hours late (i.e. after 11:30) leaves the whole day
- *    unpaid, valued at basic ÷ 22 working days.
+ *    unpaid, valued at basic ÷ the number of working days in that month
+ *    (Mon–Fri minus public holidays; see workingDaysInMonth in leave.ts).
  *  - 15 or more late days in the month drops the whole month's basic salary
  *    to half (overtime and allowance are unaffected).
  */
@@ -18,6 +19,9 @@ export const LATE_RATE = 10_000; // LAK per started hour after the grace cutoff
 export const LATE_FREE = 3; // first N late days: warning letter only
 export const HALF_AT = 15; // half salary from this many late days
 export const UNPAID_AFTER_MIN = 120; // more than 2h late -> day unpaid
+/** Fallback divisor for an unpaid day when the caller does not pass the month's
+ *  real working-day count. Callers on the payroll path always pass the real
+ *  number (workingDaysInMonth); this only covers ad-hoc/legacy calls. */
 export const WORKING_DAYS_PER_MONTH = 22;
 
 export interface LateDay {
@@ -39,12 +43,17 @@ export interface LateModelResult {
   warned: boolean; // hit the warning-letter threshold
   deducting: boolean; // past the free days, deductions are active
   half: boolean; // hit the half-salary threshold
-  dailyRate: number; // basic / 22, used for unpaid days
+  dailyRate: number; // basic / working-days-in-month, used for unpaid days
 }
 
-export function lateModel(days: LateDay[], basicSalary: number): LateModelResult {
+export function lateModel(
+  days: LateDay[],
+  basicSalary: number,
+  workingDays: number = WORKING_DAYS_PER_MONTH,
+): LateModelResult {
   const sorted = [...days].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-  const dailyRate = Math.round(basicSalary / WORKING_DAYS_PER_MONTH);
+  const divisor = workingDays > 0 ? workingDays : WORKING_DAYS_PER_MONTH;
+  const dailyRate = Math.round(basicSalary / divisor);
   let total = 0;
   const rows: LateDayResult[] = sorted.map((d, index) => {
     const unpaid = d.lateMinutes > UNPAID_AFTER_MIN;

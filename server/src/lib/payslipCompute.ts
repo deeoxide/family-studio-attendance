@@ -1,7 +1,14 @@
 import { prisma } from './prisma';
 import { computePay, PayResult } from './payroll';
 import { lateModel, LateDayResult } from './lateDeduction';
+import { workingDaysInMonth } from './leave';
 import type { User } from '@prisma/client';
+
+/** Public-holiday dates (YYYY-MM-DD) that fall inside one "YYYY-MM" period. */
+async function periodHolidayISO(periodMonth: string): Promise<string[]> {
+  const holidays = await prisma.holiday.findMany({ where: { date: { startsWith: periodMonth } } });
+  return holidays.map((h) => h.date);
+}
 
 export interface OpenPeriodFigures {
   pay: PayResult;
@@ -17,8 +24,12 @@ export interface OpenPeriodInput {
 }
 
 /** Apply the punctuality rule from a set of this-month late days + staged figures. */
-function figuresFrom(input: OpenPeriodInput, lateDays: { date: string; lateMinutes: number }[]): OpenPeriodFigures {
-  const lm = lateModel(lateDays, input.basicSalary);
+function figuresFrom(
+  input: OpenPeriodInput,
+  lateDays: { date: string; lateMinutes: number }[],
+  workingDays: number,
+): OpenPeriodFigures {
+  const lm = lateModel(lateDays, input.basicSalary, workingDays);
   const pay = computePay({
     basic: input.basicSalary,
     ot: input.ot,
@@ -40,12 +51,16 @@ export async function computeOpenPeriod(
   ot: number,
   allowance: number,
 ): Promise<OpenPeriodFigures> {
-  const records = await prisma.attendanceRecord.findMany({
-    where: { userId: user.id, date: { startsWith: periodMonth }, lateMinutes: { gt: 0 } },
-  });
+  const [records, holidayISO] = await Promise.all([
+    prisma.attendanceRecord.findMany({
+      where: { userId: user.id, date: { startsWith: periodMonth }, lateMinutes: { gt: 0 } },
+    }),
+    periodHolidayISO(periodMonth),
+  ]);
   return figuresFrom(
     { userId: user.id, basicSalary: user.basicSalary, ot, allowance },
     records.map((r) => ({ date: r.date, lateMinutes: r.lateMinutes })),
+    workingDaysInMonth(periodMonth, holidayISO),
   );
 }
 
@@ -58,15 +73,19 @@ export async function computeOpenPeriodMany(
   periodMonth: string,
 ): Promise<Map<string, OpenPeriodFigures>> {
   const ids = inputs.map((i) => i.userId);
-  const records = await prisma.attendanceRecord.findMany({
-    where: { userId: { in: ids }, date: { startsWith: periodMonth }, lateMinutes: { gt: 0 } },
-  });
+  const [records, holidayISO] = await Promise.all([
+    prisma.attendanceRecord.findMany({
+      where: { userId: { in: ids }, date: { startsWith: periodMonth }, lateMinutes: { gt: 0 } },
+    }),
+    periodHolidayISO(periodMonth),
+  ]);
+  const workingDays = workingDaysInMonth(periodMonth, holidayISO);
 
   const lateByUser = new Map<string, { date: string; lateMinutes: number }[]>();
   for (const id of ids) lateByUser.set(id, []);
   for (const r of records) lateByUser.get(r.userId)!.push({ date: r.date, lateMinutes: r.lateMinutes });
 
   const out = new Map<string, OpenPeriodFigures>();
-  for (const input of inputs) out.set(input.userId, figuresFrom(input, lateByUser.get(input.userId) ?? []));
+  for (const input of inputs) out.set(input.userId, figuresFrom(input, lateByUser.get(input.userId) ?? [], workingDays));
   return out;
 }
