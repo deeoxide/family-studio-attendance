@@ -93,6 +93,9 @@ export function PayslipDetail({ payslip, onBack }: { payslip: Payslip; onBack: (
   if (payslip.lateDeduction > 0) {
     lines.push({ label: `${t('lateDeduction')} (${payslip.lateRows.filter((r) => r.charged).length} ${t('lateDays')})`, value: `−${lak(payslip.lateDeduction)}` });
   }
+  if (payslip.unpaidDeduction > 0) {
+    lines.push({ label: t('unpaidLeaveDeduction'), value: `−${lak(payslip.unpaidDeduction)}` });
+  }
 
   return (
     <View style={{ gap: 15 }}>

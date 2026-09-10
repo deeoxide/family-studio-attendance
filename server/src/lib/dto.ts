@@ -56,6 +56,7 @@ export function serializePayslip(p: Payslip) {
     sso: p.sso,
     tax: p.tax,
     lateDeduction: p.lateDeduction,
+    unpaidDeduction: p.unpaidDeduction,
     net: p.net,
     half: p.half,
     paidAt: p.paidAt,

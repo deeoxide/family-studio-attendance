@@ -1,5 +1,8 @@
 export type Role = 'EMPLOYEE' | 'MANAGER' | 'HR' | 'ADMIN';
-export type LeaveType = 'ANNUAL' | 'SICK' | 'PERSONAL';
+/** Paid entitlements plus UNPAID (over-balance / no-entitlement days, docked at day rate). */
+export type LeaveType = 'ANNUAL' | 'SICK' | 'PERSONAL' | 'UNPAID';
+export type PaidLeaveType = 'ANNUAL' | 'SICK' | 'PERSONAL';
+export const PAID_LEAVE_TYPES: PaidLeaveType[] = ['ANNUAL', 'SICK', 'PERSONAL'];
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PayslipStatus = 'OPEN' | 'PAID';
 export type CorrectionStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -146,6 +149,7 @@ export interface Payslip {
   sso: number;
   tax: number;
   lateDeduction: number;
+  unpaidDeduction: number;
   net: number;
   half: boolean;
   status: PayslipStatus;

@@ -93,15 +93,22 @@ describe('computePay - taxable base', () => {
 });
 
 describe('computePay - net', () => {
-  it('nets gross minus SSO, tax and late deduction', () => {
-    const r = computePay({ basic: 4_500_000, ot: 320_000, allowance: 500_000 });
+  it('nets gross minus SSO, tax, late deduction and unpaid leave', () => {
+    const r = computePay({ basic: 4_500_000, ot: 320_000, allowance: 500_000, lateDeduct: 20_000, unpaidDeduct: 200_000 });
     expect(r.gross).toBe(5_320_000);
-    expect(r.net).toBe(r.gross - r.sso - r.tax - r.lateDeduct);
+    expect(r.net).toBe(r.gross - r.sso - r.tax - r.lateDeduct - r.unpaidDeduct);
   });
 
   it('never returns a negative net', () => {
     const r = computePay({ basic: 1_000_000, ot: 0, allowance: 0, lateDeduct: 5_000_000 });
     expect(r.net).toBe(0);
+  });
+
+  it('subtracts an unpaid-leave deduction from net (not floored by the minimum wage)', () => {
+    const base = computePay({ basic: 3_000_000, ot: 0, allowance: 0 });
+    const withUnpaid = computePay({ basic: 3_000_000, ot: 0, allowance: 0, unpaidDeduct: 900_000 });
+    expect(withUnpaid.unpaidDeduct).toBe(900_000);
+    expect(withUnpaid.net).toBe(base.net - 900_000);
   });
 
   it('halves only the basic component, not OT or allowance', () => {

@@ -11,7 +11,7 @@ import type { LeaveType, OutingCategory } from '@/api/types';
 import { color, headingFont } from '@/theme/tokens';
 import { formatRange, formatDateWeekdayShort, hhmm, pick } from '@/lib/format';
 
-const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal' };
+const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal' | 'unpaid'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal', UNPAID: 'unpaid' };
 const OUTING_KEY: Record<OutingCategory, 'outMeeting' | 'outClient' | 'outErrand' | 'outDocument' | 'outOther'> = {
   MEETING: 'outMeeting', CLIENT: 'outClient', ERRAND: 'outErrand', DOCUMENT: 'outDocument', OTHER: 'outOther',
 };

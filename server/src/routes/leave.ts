@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { requireAuth, requireRole } from '../middleware/auth';
-import { workingDaysBetween } from '../lib/leave';
+import { workingDaysBetween, splitLeaveRange } from '../lib/leave';
 import { assertCanManage } from '../middleware/loadTarget';
 import { scopedTeamIds } from '../middleware/scopedTeam';
 import { parse } from '../http/validate';
@@ -13,7 +13,10 @@ import { currentYear } from '../lib/period';
 export const leaveRouter = Router();
 leaveRouter.use(requireAuth);
 
-const LEAVE_TYPES = ['ANNUAL', 'SICK', 'PERSONAL'] as const;
+const LEAVE_TYPES = ['ANNUAL', 'SICK', 'PERSONAL', 'UNPAID'] as const;
+/** UNPAID leave has no entitlement — it is never balance-checked. */
+const PAID_LEAVE_TYPES = ['ANNUAL', 'SICK', 'PERSONAL'] as const;
+type PaidLeaveType = (typeof PAID_LEAVE_TYPES)[number];
 
 /** Year from `?year=`, falling back to the current Vientiane calendar year. */
 const yearParam = (req: Request) => Number(req.query.year) || currentYear();
@@ -65,13 +68,57 @@ leaveRouter.get('/requests', async (req, res) => {
   res.json({ requests });
 });
 
-/** Working days in [from, to], or a 422 if the range has none. */
-async function countWorkingDaysOrThrow(from: string, to: string): Promise<number> {
-  const wd = workingDaysBetween(from, to, await holidayISOList());
-  if (!wd || wd.days === 0) {
+interface LeaveRow {
+  leaveType: (typeof LEAVE_TYPES)[number];
+  fromDate: string;
+  toDate: string;
+  workingDays: number;
+}
+
+/**
+ * Turn one leave request into the row(s) to create. A paid request that fits the
+ * remaining balance is one row; one that runs over is split — the balance-sized
+ * head stays on the requested type, the tail becomes UNPAID leave (docked from
+ * pay at day-rate, see payslipCompute.ts). An UNPAID request is never
+ * balance-checked. Throws 422 if the range holds no working days.
+ */
+async function planLeaveRows(
+  userId: string,
+  leaveType: (typeof LEAVE_TYPES)[number],
+  from: string,
+  to: string,
+  holidays: string[],
+): Promise<LeaveRow[]> {
+  const total = workingDaysBetween(from, to, holidays);
+  if (!total || total.days === 0) {
     throw unprocessable('That range has no working days. Pick different dates.');
   }
-  return wd.days;
+
+  if (leaveType === 'UNPAID') {
+    return [{ leaveType: 'UNPAID', fromDate: from, toDate: to, workingDays: total.days }];
+  }
+
+  const year = Number(from.slice(0, 4));
+  const [balance, used] = await Promise.all([
+    prisma.leaveBalance.findUnique({
+      where: { userId_leaveType_year: { userId, leaveType: leaveType as PaidLeaveType, year } },
+    }),
+    approvedDaysByType(userId, year),
+  ]);
+  const remaining = Math.max(0, (balance?.totalDays ?? 0) - (used[leaveType] ?? 0));
+
+  if (total.days <= remaining) {
+    return [{ leaveType, fromDate: from, toDate: to, workingDays: total.days }];
+  }
+
+  const split = splitLeaveRange(from, to, holidays, remaining);
+  if (!split) throw unprocessable('That range has no working days. Pick different dates.');
+  const rows: LeaveRow[] = [];
+  if (split.paid) rows.push({ leaveType, fromDate: split.paid.from, toDate: split.paid.to, workingDays: split.paid.days });
+  if (split.unpaid) {
+    rows.push({ leaveType: 'UNPAID', fromDate: split.unpaid.from, toDate: split.unpaid.to, workingDays: split.unpaid.days });
+  }
+  return rows;
 }
 
 const applySchema = z.object({
@@ -83,30 +130,18 @@ const applySchema = z.object({
 
 leaveRouter.post('/apply', async (req, res) => {
   const { leaveType, from, to, reason } = parse(applySchema, req.body, 'Invalid leave request');
-
-  const days = await countWorkingDaysOrThrow(from, to);
   if (leaveType === 'SICK' && !reason.trim()) {
     throw unprocessable('Sick leave needs a short reason.');
   }
 
-  const year = Number(from.slice(0, 4));
-  const [balance, used] = await Promise.all([
-    prisma.leaveBalance.findUnique({
-      where: { userId_leaveType_year: { userId: req.user!.id, leaveType, year } },
-    }),
-    approvedDaysByType(req.user!.id, year),
-  ]);
-  const remaining = (balance?.totalDays ?? 0) - (used[leaveType] ?? 0);
-  if (days > remaining) {
-    throw unprocessable(
-      `Only ${remaining} day${remaining === 1 ? '' : 's'} remain in that balance. Shorten the range.`,
+  const rows = await planLeaveRows(req.user!.id, leaveType, from, to, await holidayISOList());
+  const requests = [];
+  for (const row of rows) {
+    requests.push(
+      await prisma.leaveRequest.create({ data: { userId: req.user!.id, ...row, reason: reason.trim() } }),
     );
   }
-
-  const request = await prisma.leaveRequest.create({
-    data: { userId: req.user!.id, leaveType, fromDate: from, toDate: to, workingDays: days, reason: reason.trim() },
-  });
-  res.status(201).json({ request });
+  res.status(201).json({ requests });
 });
 
 const recordSchema = z.object({
@@ -119,9 +154,9 @@ const recordSchema = z.object({
 
 /**
  * Record leave directly for an employee — saved already APPROVED, no request
- * step. HR / Admin for anyone; a manager for their direct reports. Entitlements
- * are managed separately (POST /api/people/:id/leave-balance), so this does not
- * block on the remaining balance.
+ * step. HR / Admin for anyone; a manager for their direct reports. Days beyond
+ * the paid balance are recorded as UNPAID (to grant extra paid leave, raise the
+ * entitlement first via POST /api/people/:id/leave-balance).
  */
 leaveRouter.post('/record', requireRole('MANAGER', 'HR', 'ADMIN'), async (req, res) => {
   const { userId, leaveType, from, to, reason } = parse(recordSchema, req.body, 'Invalid leave record');
@@ -130,21 +165,23 @@ leaveRouter.post('/record', requireRole('MANAGER', 'HR', 'ADMIN'), async (req, r
   if (!target) throw notFound('Employee not found');
   assertCanManage(req.user!, target);
 
-  const days = await countWorkingDaysOrThrow(from, to);
-  const request = await prisma.leaveRequest.create({
-    data: {
-      userId,
-      leaveType,
-      fromDate: from,
-      toDate: to,
-      workingDays: days,
-      reason: reason.trim(),
-      status: 'APPROVED',
-      decidedById: req.user!.id,
-      decidedAt: new Date(),
-    },
-  });
-  res.status(201).json({ request });
+  const rows = await planLeaveRows(userId, leaveType, from, to, await holidayISOList());
+  const requests = [];
+  for (const row of rows) {
+    requests.push(
+      await prisma.leaveRequest.create({
+        data: {
+          userId,
+          ...row,
+          reason: reason.trim(),
+          status: 'APPROVED',
+          decidedById: req.user!.id,
+          decidedAt: new Date(),
+        },
+      }),
+    );
+  }
+  res.status(201).json({ requests });
 });
 
 leaveRouter.get('/pending', requireRole('MANAGER', 'HR', 'ADMIN'), async (req, res) => {

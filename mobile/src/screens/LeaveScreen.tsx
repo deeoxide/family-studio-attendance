@@ -12,8 +12,8 @@ import { formatRange } from '@/lib/format';
 import { groupHolidays, nextUpcoming, daysUntil } from '@/lib/holidays';
 import { todayISODate } from '@/lib/date';
 
-const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal' };
-const TYPE_NOTE_KEY: Record<LeaveType, 'annualNote' | 'sickNote' | 'personalNote'> = { ANNUAL: 'annualNote', SICK: 'sickNote', PERSONAL: 'personalNote' };
+const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal' | 'unpaid'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal', UNPAID: 'unpaid' };
+const TYPE_NOTE_KEY: Record<LeaveType, 'annualNote' | 'sickNote' | 'personalNote' | 'unpaidNote'> = { ANNUAL: 'annualNote', SICK: 'sickNote', PERSONAL: 'personalNote', UNPAID: 'unpaidNote' };
 const STATUS_VARIANT: Record<LeaveStatus, 'outline' | 'accent' | 'neutral'> = { PENDING: 'outline', APPROVED: 'accent', REJECTED: 'neutral' };
 const STATUS_KEY: Record<LeaveStatus, 'pending' | 'approved' | 'rejected'> = { PENDING: 'pending', APPROVED: 'approved', REJECTED: 'rejected' };
 

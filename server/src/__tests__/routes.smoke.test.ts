@@ -342,7 +342,43 @@ describe('leave', () => {
       reason: 'trip',
     });
     expect(ok.status).toBe(201);
-    expect(ok.body.request.status).toBe('PENDING');
+    expect(ok.body.requests).toHaveLength(1);
+    expect(ok.body.requests[0].status).toBe('PENDING');
+  });
+
+  it('POST /api/leave/apply — UNPAID leave is not balance-checked', async () => {
+    const res = await authed('post', '/api/leave/apply', t.employee).send({
+      leaveType: 'UNPAID',
+      from: '2026-11-02',
+      to: '2026-11-06',
+      reason: 'family',
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.requests).toHaveLength(1);
+    expect(res.body.requests[0].leaveType).toBe('UNPAID');
+    expect(res.body.requests[0].workingDays).toBe(5);
+  });
+
+  it('POST /api/leave/apply — a paid request over the balance splits into paid + UNPAID', async () => {
+    // otherEmployee is seeded with a fresh ANNUAL balance; ask for far more than it holds
+    const bal = await prisma.leaveBalance.findFirst({
+      where: { userId: id[ACCOUNTS.otherEmployee], leaveType: 'ANNUAL' },
+    });
+    const remaining = bal?.totalDays ?? 15;
+    const res = await authed('post', '/api/leave/apply', t.otherEmployee).send({
+      leaveType: 'ANNUAL',
+      from: '2026-11-02', // Mon
+      to: '2026-11-27', // Fri, 20 working days, all > remaining
+      reason: 'long trip',
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.requests).toHaveLength(2);
+    const [paid, unpaid] = res.body.requests;
+    expect(paid.leaveType).toBe('ANNUAL');
+    expect(paid.workingDays).toBe(remaining);
+    expect(unpaid.leaveType).toBe('UNPAID');
+    expect(paid.workingDays + unpaid.workingDays).toBe(20);
+    expect(unpaid.fromDate > paid.toDate).toBe(true);
   });
 
   it('POST /api/leave/record — 403 employee, 403 manager outside team, 201 manager for a report, 201 HR', async () => {
@@ -355,7 +391,7 @@ describe('leave', () => {
 
     const mgr = await authed('post', '/api/leave/record', t.manager).send(forReport);
     expect(mgr.status).toBe(201);
-    expect(mgr.body.request.status).toBe('APPROVED');
+    expect(mgr.body.requests[0].status).toBe('APPROVED');
 
     const hr = await authed('post', '/api/leave/record', t.hr).send({
       userId: id[ACCOUNTS.employee],

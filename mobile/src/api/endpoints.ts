@@ -94,13 +94,13 @@ export const leaveApi = {
   holidays: () => api.get<{ holidays: Holiday[] }>('/api/leave/holidays'),
   requests: () => api.get<{ requests: LeaveRequest[] }>('/api/leave/requests'),
   apply: (leaveType: LeaveType, from: string, to: string, reason: string) =>
-    api.post<{ request: LeaveRequest }>('/api/leave/apply', { leaveType, from, to, reason }),
+    api.post<{ requests: LeaveRequest[] }>('/api/leave/apply', { leaveType, from, to, reason }),
   pending: () => api.get<{ requests: LeaveRequest[] }>('/api/leave/pending'),
   approve: (id: string) => api.post<{ request: LeaveRequest }>(`/api/leave/${id}/approve`),
   reject: (id: string) => api.post<{ request: LeaveRequest }>(`/api/leave/${id}/reject`),
   /** HR / Admin (anyone) or a manager (their team): record leave as already approved. */
   record: (input: { userId: string; leaveType: LeaveType; from: string; to: string; reason: string }) =>
-    api.post<{ request: LeaveRequest }>('/api/leave/record', input),
+    api.post<{ requests: LeaveRequest[] }>('/api/leave/record', input),
 };
 
 export const payrollApi = {

@@ -99,6 +99,13 @@ export interface PayInputs {
   half?: boolean;
   /** LAK already withheld for late arrivals this period (see lateDeduction.ts). */
   lateDeduct?: number;
+  /**
+   * LAK for unpaid / over-entitlement leave days taken this period
+   * (days x basic / working-days-in-month, computed in payslipCompute.ts).
+   * Not floored by the minimum wage: these are days genuinely not worked, so
+   * "no work, no pay" applies the same way it does to any absence.
+   */
+  unpaidDeduct?: number;
 }
 
 export interface PayResult {
@@ -111,6 +118,8 @@ export interface PayResult {
   tax: number;
   /** Late deduction actually applied (may be less than requested if the minimum-wage floor bit). */
   lateDeduct: number;
+  /** Unpaid-leave deduction applied this period. */
+  unpaidDeduct: number;
   net: number;
 }
 
@@ -133,6 +142,7 @@ export function computePay(inputs: PayInputs): PayResult {
   const preHalfBasic = inputs.basic;
   const halvedBasic = inputs.half ? Math.round(preHalfBasic / 2) : preHalfBasic;
   const requestedLate = inputs.lateDeduct ?? 0;
+  const unpaidDeduct = Math.max(0, Math.round(inputs.unpaidDeduct ?? 0));
 
   // OT PIT-exemption is decided on the employee's real contracted salary, not the
   // punctuality-reduced figure.
@@ -173,7 +183,7 @@ export function computePay(inputs: PayInputs): PayResult {
   const taxable = Math.max(0, gross - sso - exemptOt);
   const tax = computeTax(taxable);
 
-  const net = Math.max(0, gross - sso - tax - lateDeduct);
+  const net = Math.max(0, gross - sso - tax - lateDeduct - unpaidDeduct);
 
   return {
     basic: effectiveBasic,
@@ -183,6 +193,7 @@ export function computePay(inputs: PayInputs): PayResult {
     sso,
     tax,
     lateDeduct,
+    unpaidDeduct,
     net,
   };
 }

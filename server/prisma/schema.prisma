@@ -10,7 +10,7 @@ datasource db {
 // SQLite has no native enum type, so roles/types/statuses are plain strings
 // here, constrained by the zod schemas in src/lib and src/routes instead:
 //   Role: "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN"
-//   LeaveType: "ANNUAL" | "SICK" | "PERSONAL"
+//   LeaveType: "ANNUAL" | "SICK" | "PERSONAL" | "UNPAID"
 //   LeaveStatus / CorrectionStatus / OutingStatus: "PENDING" | "APPROVED" | "REJECTED"
 //   PayslipStatus: "OPEN" | "PAID"
 //   AttendanceLog.type: "CHECK_IN" | "CHECK_OUT"
@@ -202,12 +202,13 @@ model Payslip {
   basic         Int
   ot            Int
   allowance     Int
-  gross         Int
-  sso           Int
-  tax           Int
-  lateDeduction Int       @default(0)
-  net           Int
-  half          Boolean   @default(false)
+  gross            Int
+  sso              Int
+  tax              Int
+  lateDeduction    Int       @default(0)
+  unpaidDeduction  Int       @default(0) // unpaid / over-entitlement leave days taken this period
+  net              Int
+  half             Boolean   @default(false)
   status        String    @default("OPEN") // OPEN | PAID
   paidAt        DateTime?
 

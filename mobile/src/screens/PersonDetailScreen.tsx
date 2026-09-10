@@ -24,7 +24,7 @@ const ROLE_KEY: Record<Role, 'roleEmp' | 'roleMgr' | 'roleHr' | 'roleAdmin'> = {
   HR: 'roleHr',
   ADMIN: 'roleAdmin',
 };
-const LEAVE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal' };
+const LEAVE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal' | 'unpaid'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal', UNPAID: 'unpaid' };
 const num = (s: string) => Math.max(0, Math.round(Number(s.replace(/[^\d]/g, '')) || 0));
 
 export function PersonDetailScreen({ route, navigation }: any) {

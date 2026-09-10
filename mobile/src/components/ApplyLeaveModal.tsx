@@ -11,8 +11,8 @@ import { DateField } from '@/components/DateField';
 import { workingDaysBetween } from '@/lib/workingDays';
 import { todayISODate } from '@/lib/date';
 
-const TYPES: LeaveType[] = ['ANNUAL', 'SICK', 'PERSONAL'];
-const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal' };
+const TYPES: LeaveType[] = ['ANNUAL', 'SICK', 'PERSONAL', 'UNPAID'];
+const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal' | 'unpaid'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal', UNPAID: 'unpaid' };
 
 export function ApplyLeaveModal({
   visible,
@@ -39,12 +39,14 @@ export function ApplyLeaveModal({
 
   const calcNote = !wd
     ? t('noWorkingDays')
-    : (() => {
-        const parts: string[] = [];
-        if (wd.weekendDays) parts.push(`${wd.weekendDays} weekend day${wd.weekendDays > 1 ? 's' : ''}`);
-        if (wd.holidayDays) parts.push(`${wd.holidayDays} public holiday${wd.holidayDays > 1 ? 's' : ''}`);
-        return parts.length ? `Working days deducted, excluding ${parts.join(' and ')}.` : 'Working days deducted from your balance.';
-      })();
+    : leaveType === 'UNPAID'
+      ? t('unpaidCalcNote')
+      : (() => {
+          const parts: string[] = [];
+          if (wd.weekendDays) parts.push(`${wd.weekendDays} weekend day${wd.weekendDays > 1 ? 's' : ''}`);
+          if (wd.holidayDays) parts.push(`${wd.holidayDays} public holiday${wd.holidayDays > 1 ? 's' : ''}`);
+          return parts.length ? `Working days deducted, excluding ${parts.join(' and ')}.` : 'Working days deducted from your balance.';
+        })();
 
   const applyMut = useMutation({
     mutationFn: () => leaveApi.apply(leaveType, from, to, reason),

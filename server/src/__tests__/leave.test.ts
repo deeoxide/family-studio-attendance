@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { workingDaysBetween, workingDaysInMonth } from '../lib/leave';
+import { workingDaysBetween, workingDaysInMonth, splitLeaveRange } from '../lib/leave';
 
 const HOLIDAYS_2026 = ['2026-01-01', '2026-03-08', '2026-04-14', '2026-04-15', '2026-04-16', '2026-05-01', '2026-12-02'];
 
@@ -66,5 +66,48 @@ describe('workingDaysInMonth', () => {
   it('returns 0 for a malformed period string', () => {
     expect(workingDaysInMonth('2026', [])).toBe(0);
     expect(workingDaysInMonth('2026-13', [])).toBe(0);
+  });
+});
+
+describe('splitLeaveRange', () => {
+  // Mon 2026-11-02 .. Fri 2026-11-27 = 20 working days, no holidays in range.
+  const FROM = '2026-11-02';
+  const TO = '2026-11-27';
+
+  it('keeps the whole range paid when it fits the balance', () => {
+    expect(splitLeaveRange(FROM, TO, HOLIDAYS_2026, 20)).toEqual({
+      paid: { from: FROM, to: TO, days: 20 },
+      unpaid: null,
+    });
+    expect(splitLeaveRange(FROM, TO, HOLIDAYS_2026, 25)?.unpaid).toBeNull();
+  });
+
+  it('makes the whole range unpaid when there is no balance left', () => {
+    expect(splitLeaveRange(FROM, TO, HOLIDAYS_2026, 0)).toEqual({
+      paid: null,
+      unpaid: { from: FROM, to: TO, days: 20 },
+    });
+  });
+
+  it('splits at the Nth working day', () => {
+    // 3 paid working days: Mon 2/11, Tue 3/11, Wed 4/11 -> paid ends 2026-11-04,
+    // unpaid starts the next working day 2026-11-05.
+    const s = splitLeaveRange(FROM, TO, HOLIDAYS_2026, 3);
+    expect(s).toEqual({
+      paid: { from: FROM, to: '2026-11-04', days: 3 },
+      unpaid: { from: '2026-11-05', to: TO, days: 17 },
+    });
+  });
+
+  it('skips weekends when finding the split point', () => {
+    // 5 paid working days lands on Fri 2026-11-06; unpaid resumes Mon 2026-11-09.
+    const s = splitLeaveRange(FROM, TO, HOLIDAYS_2026, 5);
+    expect(s?.paid?.to).toBe('2026-11-06');
+    expect(s?.unpaid?.from).toBe('2026-11-09');
+    expect((s?.paid?.days ?? 0) + (s?.unpaid?.days ?? 0)).toBe(20);
+  });
+
+  it('returns null for an inverted range', () => {
+    expect(splitLeaveRange(TO, FROM, HOLIDAYS_2026, 3)).toBeNull();
   });
 });

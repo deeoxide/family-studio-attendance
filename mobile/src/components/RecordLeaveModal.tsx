@@ -11,7 +11,7 @@ import { TextField, ChoiceRow } from '@/components/Field';
 import { DateField } from '@/components/DateField';
 import { todayISODate } from '@/lib/date';
 
-const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal' };
+const TYPE_KEY: Record<LeaveType, 'annual' | 'sick' | 'personal' | 'unpaid'> = { ANNUAL: 'annual', SICK: 'sick', PERSONAL: 'personal', UNPAID: 'unpaid' };
 
 /** HR/Admin (anyone) or a manager (their report): log leave that is already approved. */
 export function RecordLeaveModal({
