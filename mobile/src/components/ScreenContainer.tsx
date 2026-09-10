@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/state/AuthContext';
 import { useLanguage } from '@/state/LanguageContext';
-import { color, radius, bodyFont, headingFont } from '@/theme/tokens';
+import { color, radius, bodyFont, headingFont, kickerStyle } from '@/theme/tokens';
 
 const ROLE_LABEL_KEY = { EMPLOYEE: 'roleEmp', MANAGER: 'roleMgr', HR: 'roleHr', ADMIN: 'roleAdmin' } as const;
 
@@ -30,10 +30,10 @@ export function ScreenContainer({
     <SafeAreaView style={{ flex: 1, backgroundColor: color.white }} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View style={{ flexShrink: 1 }}>
-          <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: color.accent700 }}>
+          <Text style={{ fontFamily: bodyFont(lang), ...kickerStyle() }}>
             {user ? t(ROLE_LABEL_KEY[user.role]) : ''}
           </Text>
-          <Text style={{ fontFamily: headingFont(lang), fontWeight: lang === 'en' ? '600' : undefined, fontSize: 21, color: color.text, marginTop: 2 }}>
+          <Text style={{ fontFamily: headingFont(lang), fontWeight: lang === 'en' ? '600' : undefined, fontSize: 21, color: color.text, marginTop: 3 }}>
             {title}
           </Text>
         </View>

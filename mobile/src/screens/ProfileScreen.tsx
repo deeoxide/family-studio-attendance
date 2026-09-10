@@ -11,7 +11,7 @@ import { useLanguage } from '@/state/LanguageContext';
 import { officeApi, authApi } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
 import type { UpdateMeInput } from '@/api/types';
-import { color, headingFont, bodyFont, radius } from '@/theme/tokens';
+import { color, headingFont, bodyFont, radius, kickerStyle } from '@/theme/tokens';
 import { pick, formatDateShort } from '@/lib/format';
 
 const PREFS_KEY = 'attendance.prefs';
@@ -74,7 +74,7 @@ export function ProfileScreen() {
       {office ? (
         <Card style={{ padding: 0 }}>
           <View style={{ padding: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: color.divider }}>
-            <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: color.neutral700 }}>{t('workplace')}</Text>
+            <Text style={{ fontFamily: bodyFont(lang), ...kickerStyle(color.neutral700) }}>{t('workplace')}</Text>
           </View>
           <View style={{ padding: 14, paddingHorizontal: 16, gap: 7 }}>
             <Text style={{ fontSize: 13, color: color.text }}>{office.name}</Text>
@@ -174,7 +174,7 @@ function PersonalInfoCard({ onSaved, onFlash }: { onSaved: () => Promise<void>; 
   return (
     <Card style={{ padding: 0 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: color.divider }}>
-        <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: color.neutral700 }}>{t('personalInfo')}</Text>
+        <Text style={{ fontFamily: bodyFont(lang), ...kickerStyle(color.neutral700) }}>{t('personalInfo')}</Text>
         {!editing ? (
           <Pressable onPress={() => setEditing(true)} hitSlop={10}>
             <Text style={{ fontSize: 12, color: color.accent700 }}>{t('edit')}</Text>

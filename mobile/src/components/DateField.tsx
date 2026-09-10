@@ -12,7 +12,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
 
   return (
     <View style={{ flex: 1, minWidth: 0 }}>
-      <Text style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: color.neutral700, marginBottom: 6 }}>{label}</Text>
+      <Text style={{ fontFamily: bodyFont(lang), fontSize: 12, color: color.neutral700, marginBottom: 6 }}>{label}</Text>
       <Pressable
         onPress={() => setOpen(true)}
         style={{ minHeight: 46, borderWidth: 1, borderColor: color.divider, borderRadius: radius.md, justifyContent: 'center', paddingHorizontal: 12 }}

@@ -77,7 +77,7 @@ function Field(props: {
   const { lang } = useLanguage();
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: color.neutral700, marginBottom: 6 }}>{props.label}</Text>
+      <Text style={{ fontFamily: bodyFont(lang), fontSize: 12, color: color.neutral700, marginBottom: 6 }}>{props.label}</Text>
       <TextInput
         value={props.value}
         onChangeText={props.onChangeText}

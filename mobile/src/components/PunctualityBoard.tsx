@@ -5,7 +5,7 @@ import { Body, Card, LoadingBlock, Muted } from '@/components/ui';
 import { useLanguage } from '@/state/LanguageContext';
 import { attendanceApi } from '@/api/endpoints';
 import type { KpiRow } from '@/api/types';
-import { color, headingFont, tabularNums } from '@/theme/tokens';
+import { color, headingFont, bodyFont, tabularNums, kickerStyle } from '@/theme/tokens';
 import { levelStyle } from '@/lib/punctuality';
 import { lak, pick } from '@/lib/format';
 import { periodLabel } from '@/lib/period';
@@ -37,7 +37,7 @@ export function PunctualityBoard({ onOpenPerson }: { onOpenPerson: (id: string) 
   return (
     <View style={{ gap: 14 }}>
       <Card>
-        <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: color.neutral700 }}>
+        <Text style={{ fontFamily: bodyFont(lang), ...kickerStyle(color.neutral700) }}>
           {periodLabel(periodMonth, lang)}
         </Text>
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
@@ -87,9 +87,9 @@ export function PunctualityBoard({ onOpenPerson }: { onOpenPerson: (id: string) 
 
 function TotalCell({ value, label, tint }: { value: number; label: string; tint: string }) {
   return (
-    <View style={{ flex: 1, borderWidth: 1, borderColor: color.divider, borderRadius: 4, paddingVertical: 12, alignItems: 'center' }}>
+    <View style={{ flex: 1, borderWidth: 1, borderColor: color.divider, paddingVertical: 12, alignItems: 'center' }}>
       <Text style={[{ fontFamily: headingFont('en'), fontSize: 24, color: tint }, tabularNums]}>{value}</Text>
-      <Text style={{ fontSize: 9.5, color: color.neutral700, marginTop: 3, textAlign: 'center' }}>{label}</Text>
+      <Text style={{ fontSize: 10.5, color: color.neutral700, marginTop: 4, textAlign: 'center' }}>{label}</Text>
     </View>
   );
 }

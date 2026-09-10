@@ -12,7 +12,7 @@ import { useLanguage } from '@/state/LanguageContext';
 import { peopleApi, attendanceApi } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
 import type { AttendanceLog, LeaveType, Role, UpdateEmployeeInput } from '@/api/types';
-import { color, headingFont, tabularNums } from '@/theme/tokens';
+import { color, headingFont, bodyFont, tabularNums, kickerStyle } from '@/theme/tokens';
 import { pick, lak, formatDateWeekdayShort, formatTimestamp } from '@/lib/format';
 import { levelStyle } from '@/lib/punctuality';
 import { periodLabel } from '@/lib/period';
@@ -154,7 +154,7 @@ function PunctualityKpiCard({ kpi }: { kpi: PunctualityDetail }) {
     <Card style={{ padding: 0, borderColor: s.border, backgroundColor: s.bg }}>
       <View style={{ padding: 15, flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
         <View style={{ flexShrink: 1 }}>
-          <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: s.fg }}>
+          <Text style={{ fontFamily: bodyFont(lang), ...kickerStyle(s.fg) }}>
             {t('punctualityKpi')} · {periodLabel(kpi.periodMonth, lang)}
           </Text>
           <Text style={{ fontFamily: headingFont('en'), fontSize: 17, marginTop: 5, color: s.fg }}>{t(s.labelKey)}</Text>
@@ -199,9 +199,10 @@ function PunctualityKpiCard({ kpi }: { kpi: PunctualityDetail }) {
 }
 
 function SectionHead({ label }: { label: string }) {
+  const { lang } = useLanguage();
   return (
     <View style={{ padding: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: color.divider }}>
-      <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: color.neutral700 }}>{label}</Text>
+      <Text style={{ fontFamily: bodyFont(lang), ...kickerStyle(color.neutral700) }}>{label}</Text>
     </View>
   );
 }

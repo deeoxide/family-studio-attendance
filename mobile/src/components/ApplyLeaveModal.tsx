@@ -71,7 +71,7 @@ export function ApplyLeaveModal({
           </View>
 
           <View>
-            <Text style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: color.neutral700, marginBottom: 7 }}>{t('type')}</Text>
+            <Text style={{ fontFamily: bodyFont(lang), fontSize: 12, color: color.neutral700, marginBottom: 7 }}>{t('type')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {TYPES.map((ty) => {
                 const active = leaveType === ty;
@@ -107,7 +107,7 @@ export function ApplyLeaveModal({
           </View>
 
           <View>
-            <Text style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: color.neutral700, marginBottom: 6 }}>{t('reason')}</Text>
+            <Text style={{ fontFamily: bodyFont(lang), fontSize: 12, color: color.neutral700, marginBottom: 6 }}>{t('reason')}</Text>
             <TextInput
               value={reason}
               onChangeText={setReason}

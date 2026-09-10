@@ -8,7 +8,7 @@ import {
   View,
   ViewProps,
 } from 'react-native';
-import { color, radius, shadow, headingFont, bodyFont, tabularNums } from '@/theme/tokens';
+import { color, radius, shadow, headingFont, bodyFont, tabularNums, kickerStyle } from '@/theme/tokens';
 import { useLanguage } from '@/state/LanguageContext';
 
 // ── Text ──────────────────────────────────────────────────────────────────
@@ -29,8 +29,9 @@ export function Heading({ style, ...props }: TextProps) {
 }
 
 export function Kicker({ style, children, ...props }: TextProps) {
+  const { lang } = useLanguage();
   return (
-    <Text style={[styles.kicker, style]} {...props}>
+    <Text style={[{ fontFamily: bodyFont(lang) }, kickerStyle(), style]} {...props}>
       {children}
     </Text>
   );
@@ -230,10 +231,9 @@ export function LoadingBlock() {
 }
 
 const styles = StyleSheet.create({
-  kicker: { fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: color.accent700 },
   card: { borderWidth: 1, borderColor: color.divider, borderRadius: radius.md, padding: 16 },
   divider: { height: 1, backgroundColor: color.divider },
-  tag: { alignSelf: 'flex-start', paddingVertical: 3, paddingHorizontal: 10, borderRadius: radius.md * 0.75 },
+  tag: { alignSelf: 'flex-start', paddingVertical: 3, paddingHorizontal: 10, borderRadius: radius.sm },
   btnBase: {
     minHeight: 54,
     borderWidth: 1.5,
@@ -242,8 +242,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  segment: { flexDirection: 'row', borderWidth: 1, borderColor: color.divider, borderRadius: radius.md, overflow: 'hidden' },
-  statRow: { flexDirection: 'row', borderWidth: 1, borderColor: color.divider, borderRadius: radius.md, overflow: 'hidden' },
+  // Segmented control and the stat grid carry dense data — square edges, like a ledger.
+  segment: { flexDirection: 'row', borderWidth: 1, borderColor: color.divider, borderRadius: radius.none, overflow: 'hidden' },
+  statRow: { flexDirection: 'row', borderWidth: 1, borderColor: color.divider, borderRadius: radius.none, overflow: 'hidden' },
   toast: {
     backgroundColor: color.neutral900,
     borderRadius: radius.md,

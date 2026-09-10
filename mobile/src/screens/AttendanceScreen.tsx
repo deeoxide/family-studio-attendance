@@ -10,7 +10,7 @@ import { attendanceApi } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
 import type { AttendanceSummary, CorrectionStatus } from '@/api/types';
 import { useGeofence } from '@/hooks/useGeofence';
-import { color, headingFont, bodyFont } from '@/theme/tokens';
+import { color, headingFont, bodyFont, kickerStyle } from '@/theme/tokens';
 import { elapsedClock, formatDateWeekdayShort, hhmm, hoursMinutes, lak, minutesToClock } from '@/lib/format';
 import { punctualityStyle } from '@/lib/punctuality';
 
@@ -279,21 +279,21 @@ export function AttendanceScreen() {
 function Cell({ label, value, border }: { label: string; value: string; border?: boolean }) {
   return (
     <View style={{ flex: 1, padding: 14, borderRightWidth: border ? 1 : 0, borderRightColor: color.divider }}>
-      <Text style={{ fontSize: 10, color: color.neutral700, letterSpacing: 0.5 }}>{label}</Text>
+      <Text style={{ fontSize: 11, color: color.neutral700 }}>{label}</Text>
       <Text style={{ fontFamily: headingFont('en'), fontSize: 19, marginTop: 3 }}>{value}</Text>
     </View>
   );
 }
 
 function PunctualityCard({ summary }: { summary: AttendanceSummary }) {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const p = punctualityStyle(summary.punctuality);
   const ticks = Array.from({ length: 15 }, (_, k) => k < Math.min(summary.punctuality.count, 15));
   return (
     <Card style={{ borderColor: p.border, backgroundColor: p.bg, padding: 0, gap: 0 }}>
       <View style={{ padding: 15, flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
         <View style={{ flexShrink: 1 }}>
-          <Text style={{ fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase', color: p.kicker }}>{t('punctuality')}</Text>
+          <Text style={{ fontFamily: bodyFont(lang), ...kickerStyle(p.kicker) }}>{t('punctuality')}</Text>
           <Text style={{ fontFamily: headingFont('en'), fontSize: 17, marginTop: 5, color: p.ink }}>{t(p.headlineKey)}</Text>
           <Text style={{ fontSize: 11.5, marginTop: 5, color: p.body, lineHeight: 16 }}>{t(p.noteKey)}</Text>
         </View>
@@ -304,7 +304,7 @@ function PunctualityCard({ summary }: { summary: AttendanceSummary }) {
       </View>
       <View style={{ flexDirection: 'row', gap: 5, paddingHorizontal: 15, paddingBottom: 14 }}>
         {ticks.map((filled, i) => (
-          <View key={i} style={{ flex: 1, height: 5, borderRadius: 99, backgroundColor: filled ? (i < 3 ? color.accent300 : color.accent) : color.neutral200 }} />
+          <View key={i} style={{ flex: 1, height: 5, backgroundColor: filled ? (i < 3 ? p.border : p.ink) : color.neutral200 }} />
         ))}
       </View>
       {summary.punctuality.total > 0 ? (

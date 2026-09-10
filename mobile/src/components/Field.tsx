@@ -30,7 +30,7 @@ export function TextField({
   const { lang } = useLanguage();
   return (
     <View style={{ marginBottom: 14 }}>
-      <Text style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: color.neutral700, marginBottom: 6 }}>
+      <Text style={{ fontFamily: bodyFont(lang), fontSize: 12, color: color.neutral700, marginBottom: 6 }}>
         {label}
       </Text>
       <TextInput
@@ -80,7 +80,7 @@ export function ChoiceRow<T extends string>({
   const { lang } = useLanguage();
   return (
     <View style={{ marginBottom: 14 }}>
-      <Text style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: color.neutral700, marginBottom: 7 }}>
+      <Text style={{ fontFamily: bodyFont(lang), fontSize: 12, color: color.neutral700, marginBottom: 7 }}>
         {label}
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>

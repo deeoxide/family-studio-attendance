@@ -1,52 +1,65 @@
 /**
- * Design tokens ported from the Claude Design system
- * (_ds/classical-.../styles.css) — the source of truth for colour, type
- * and spacing. Keep this file in sync if the design system is retuned.
+ * Design tokens for the Family Studio staff app.
  *
- * Palette target: white ground ~90%, gold accent ~7%, ink ~3%.
+ * The app is an instrument — a daily GPS check-in, an occasional leave request or
+ * payslip — so the palette is drawn from a photo lab rather than from a landing
+ * page: a cool print-viewing-booth grey for the ground, a blue-black ink like a
+ * camera body, and one desaturated daylight slate-blue (≈5500K studio light) as
+ * the single accent. Status colours are muted and each has a job: olive green =
+ * on time, manila ochre = warning letter (no money), dried brick = deduction.
+ *
+ * Palette weight: grey ground ~90%, slate accent ~7%, ink ~3%.
  */
 
 export const color = {
-  bg: '#f3f2f2',
-  surface: '#eae9e9',
-  text: '#201f1d',
-  accent: '#b68235',
-  divider: 'rgba(32,31,29,0.16)',
+  bg: '#eceef0',
+  surface: '#e0e3e6',
+  text: '#21262b',
+  accent: '#456277',
+  divider: 'rgba(33,38,43,0.14)',
 
-  neutral100: '#f8f4f4',
-  neutral200: '#eae7e7',
-  neutral300: '#d7d3d3',
-  neutral400: '#bab6b6',
-  neutral500: '#9b9797',
-  neutral600: '#7d7979',
-  neutral700: '#605d5d',
-  neutral800: '#444141',
-  neutral900: '#2d2b2b',
+  neutral100: '#f3f5f6',
+  neutral200: '#e6e9eb',
+  neutral300: '#d2d7da',
+  neutral400: '#b0b7bb',
+  neutral500: '#8f979c',
+  neutral600: '#6f777c',
+  neutral700: '#535a5f',
+  neutral800: '#3a4045',
+  neutral900: '#242a2e',
 
-  accent100: '#fff3e4',
-  accent200: '#ffe3bf',
-  accent300: '#facb8d',
-  accent400: '#e1ad66',
-  accent500: '#c28d41',
-  accent600: '#a06f24',
-  accent700: '#7d5411',
-  accent800: '#5a3b0a',
-  accent900: '#3a270d',
+  accent100: '#eef2f4',
+  accent200: '#d8e1e6',
+  accent300: '#b6c6cf',
+  accent400: '#8ea4b0',
+  accent500: '#647e8c',
+  accent600: '#4b6675',
+  accent700: '#3a5060',
+  accent800: '#2c3d49',
+  accent900: '#1f2b33',
 
   white: '#ffffff',
 
-  // Punctuality traffic-light. Muted to sit inside the white / gold / ink palette.
-  ok: '#3f7d4f',
-  okBg: '#eef3ee',
-  okBorder: '#cfe0d1',
-  warn: '#b68235', // = accent, the "yellow" level
-  warnBg: '#fff3e4',
-  danger: '#b0402f',
-  dangerBg: '#f7ebe8',
-  dangerBorder: '#e6c9c2',
+  // Punctuality scale — three distinct muted steps, each role-named.
+  ok: '#4d7355',        // on time — a green that leans olive
+  okBg: '#eef2ec',
+  okBorder: '#cfdcc9',
+  warn: '#9a7d3f',      // warning letter issued, no deduction — manila ochre
+  warnBg: '#f3efe6',
+  warnBorder: '#e2d6b8',
+  warnInk: '#6b5526',
+  danger: '#9a4b3d',    // deduction applies — dried brick
+  dangerBg: '#f4ece9',
+  dangerBorder: '#e3ccc4',
+  dangerInk: '#7a3a2e',
 } as const;
 
-export const radius = { sm: 2, md: 4, lg: 7 } as const;
+/**
+ * Corner radius by role, not one blanket value: square edges on dense data
+ * (stat grids, the segmented control), a small softening on cards / inputs /
+ * buttons, a circle for avatars.
+ */
+export const radius = { none: 0, sm: 3, md: 5, lg: 8, pill: 999 } as const;
 
 export const space = { 1: 4.6, 2: 9.2, 3: 13.8, 4: 18.4, 6: 27.6, 8: 36.8 } as const;
 
@@ -60,9 +73,14 @@ export const shadow = {
 /**
  * Font family names as registered with expo-font in App.tsx.
  *
- * English  — Source Serif 4: a formal, modern-classical serif with lining
- *            figures, so digits sit on a single baseline in tables and totals.
+ * English  — Source Serif 4. A studio that mounts and albums portraits earns a
+ *            serif; this one is a text face with lining figures, so it carries
+ *            headings and every column of digits (times, distances, salaries) on
+ *            one baseline. Body copy rides on it too.
  * Lao      — Noto Sans Lao throughout.
+ *
+ * Section labels ("kickers") are set with kickerStyle below — sentence case, no
+ * tracking, no caps. The tracked-out ALL-CAPS eyebrow is a template tell.
  */
 export const fontFamily = {
   headingEn: 'SourceSerif4_600SemiBold',
@@ -79,6 +97,14 @@ export const fontFamily = {
  * the values. Harmless on non-numeric text.
  */
 export const tabularNums: { fontVariant: ['tabular-nums'] } = { fontVariant: ['tabular-nums'] };
+
+/**
+ * Section label ("kicker"). Quiet, sentence case — takes the string as authored.
+ * Pass a colour to tint it to a status; defaults to the slate accent.
+ */
+export function kickerStyle(tint: string = color.accent700) {
+  return { fontSize: 11, letterSpacing: 0.2, fontWeight: '500' as const, color: tint };
+}
 
 export function headingFont(lang: 'en' | 'lo'): string {
   return lang === 'lo' ? fontFamily.laoMedium : fontFamily.headingEn;
