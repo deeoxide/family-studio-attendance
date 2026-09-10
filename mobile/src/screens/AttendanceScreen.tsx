@@ -5,10 +5,11 @@ import { ScreenContainer } from '@/components/ScreenContainer';
 import { Body, Card, Divider, ErrorNote, Heading, Kicker, Muted, PrimaryButton, SecondaryButton, StatCell, StatRow, Tag, Toast } from '@/components/ui';
 import { Icon } from '@/components/Icon';
 import { MissedPunchModal } from '@/components/MissedPunchModal';
+import { OutingModal } from '@/components/OutingModal';
 import { useLanguage } from '@/state/LanguageContext';
 import { attendanceApi } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
-import type { AttendanceSummary, CorrectionStatus } from '@/api/types';
+import type { AttendanceSummary, CorrectionStatus, OutingCategory, OutingStatus } from '@/api/types';
 import { useGeofence } from '@/hooks/useGeofence';
 import { color, headingFont, bodyFont, kickerStyle } from '@/theme/tokens';
 import { elapsedClock, formatDateWeekdayShort, hhmm, hoursMinutes, lak, minutesToClock } from '@/lib/format';
@@ -20,6 +21,7 @@ export function AttendanceScreen({ navigation, showBack }: { navigation?: any; s
   const [toast, setToast] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const [punchOpen, setPunchOpen] = useState(false);
+  const [outingOpen, setOutingOpen] = useState(false);
 
   const officeQ = useQuery({ queryKey: ['office'], queryFn: () => attendanceApi.office().then((r) => r.office) });
   const todayQ = useQuery({ queryKey: ['attendance', 'today'], queryFn: () => attendanceApi.today() });
@@ -28,6 +30,10 @@ export function AttendanceScreen({ navigation, showBack }: { navigation?: any; s
   const correctionsQ = useQuery({
     queryKey: ['attendance', 'corrections'],
     queryFn: () => attendanceApi.myCorrections().then((r) => r.corrections),
+  });
+  const outingsQ = useQuery({
+    queryKey: ['attendance', 'outings'],
+    queryFn: () => attendanceApi.myOutings().then((r) => r.outings),
   });
 
   const geo = useGeofence(officeQ.data);
@@ -252,6 +258,39 @@ export function AttendanceScreen({ navigation, showBack }: { navigation?: any; s
       </View>
 
       <View>
+        <Heading style={{ marginBottom: 8 }}>{t('myOutings')}</Heading>
+        {(outingsQ.data ?? []).length > 0 ? (
+          <Card style={{ padding: 0, marginBottom: 10 }}>
+            {(outingsQ.data ?? []).map((o, i) => {
+              const statusKey: Record<OutingStatus, 'pending' | 'approved' | 'rejected'> = {
+                PENDING: 'pending',
+                APPROVED: 'approved',
+                REJECTED: 'rejected',
+              };
+              const catKey: Record<OutingCategory, 'outMeeting' | 'outClient' | 'outErrand' | 'outDocument' | 'outOther'> = {
+                MEETING: 'outMeeting',
+                CLIENT: 'outClient',
+                ERRAND: 'outErrand',
+                DOCUMENT: 'outDocument',
+                OTHER: 'outOther',
+              };
+              const variant = o.status === 'APPROVED' ? 'accent' : o.status === 'REJECTED' ? 'neutral' : 'outline';
+              return (
+                <View key={o.id} style={{ padding: 12, paddingHorizontal: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: i === 0 ? 0 : 1, borderTopColor: color.divider }}>
+                  <View style={{ flexShrink: 1 }}>
+                    <Body style={{ fontSize: 13 }}>{formatDateWeekdayShort(o.date, lang)} · {o.fromTime}–{o.toTime}</Body>
+                    <Muted style={{ marginTop: 2, fontSize: 11 }}>{t(catKey[o.category])}{o.purpose ? ` · ${o.purpose}` : ''}</Muted>
+                  </View>
+                  <Tag label={t(statusKey[o.status])} variant={variant} />
+                </View>
+              );
+            })}
+          </Card>
+        ) : null}
+        <SecondaryButton label={t('logOuting')} onPress={() => setOutingOpen(true)} />
+      </View>
+
+      <View>
         <Heading style={{ marginBottom: 8 }}>{t('recentDays')}</Heading>
         <Card style={{ padding: 0 }}>
           {(historyQ.data ?? []).map((r, i) => {
@@ -278,6 +317,7 @@ export function AttendanceScreen({ navigation, showBack }: { navigation?: any; s
 
       {(checkInMut.isError && checkInMut.error instanceof ApiError) ? <ErrorNote message={checkInMut.error.message} /> : null}
       <MissedPunchModal visible={punchOpen} onClose={() => setPunchOpen(false)} onDone={flash} />
+      <OutingModal visible={outingOpen} onClose={() => setOutingOpen(false)} onDone={flash} />
       {toast ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 8 }}><Toast message={toast} /></View> : null}
     </ScreenContainer>
   );

@@ -232,6 +232,80 @@ describe('attendance — corrections workflow', () => {
   });
 });
 
+describe('attendance — outings', () => {
+  it('POST /api/attendance/outings — 400 bad category, 422 return before leaving, 201 employee → PENDING', async () => {
+    expect(
+      (await authed('post', '/api/attendance/outings', t.employee).send({
+        date: '2026-09-15', fromTime: '14:00', toTime: '16:00', category: 'LUNCH',
+      })).status,
+    ).toBe(400);
+
+    expect(
+      (await authed('post', '/api/attendance/outings', t.employee).send({
+        date: '2026-09-15', fromTime: '16:00', toTime: '14:00', category: 'CLIENT',
+      })).status,
+    ).toBe(422);
+
+    const ok = await authed('post', '/api/attendance/outings', t.employee).send({
+      date: '2026-09-15', fromTime: '14:00', toTime: '16:30', category: 'CLIENT', purpose: 'Album handover, Ban Phonthan',
+    });
+    expect(ok.status).toBe(201);
+    expect(ok.body.outing.status).toBe('PENDING');
+    expect(ok.body.outing.autoLogged).toBe(false);
+    id.outing = ok.body.outing.id;
+
+    const dup = await authed('post', '/api/attendance/outings', t.employee).send({
+      date: '2026-09-15', fromTime: '09:00', toTime: '10:00', category: 'ERRAND',
+    });
+    expect(dup.status).toBe(409);
+  });
+
+  it('POST /api/attendance/outings — a manager self-logs → APPROVED + autoLogged', async () => {
+    const res = await authed('post', '/api/attendance/outings', t.manager).send({
+      date: '2026-09-16', fromTime: '10:00', toTime: '11:30', category: 'MEETING', purpose: 'Supplier meeting',
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.outing.status).toBe('APPROVED');
+    expect(res.body.outing.autoLogged).toBe(true);
+  });
+
+  it('GET /api/attendance/outings — the caller\'s own history', async () => {
+    const res = await authed('get', '/api/attendance/outings', t.employee);
+    expect(res.status).toBe(200);
+    expect(res.body.outings.some((o: { id: string }) => o.id === id.outing)).toBe(true);
+  });
+
+  it('GET /api/attendance/outings/pending — 403 employee / 200 manager with the report\'s request', async () => {
+    expect((await authed('get', '/api/attendance/outings/pending', t.employee)).status).toBe(403);
+    const res = await authed('get', '/api/attendance/outings/pending', t.manager);
+    expect(res.status).toBe(200);
+    expect(res.body.outings.some((o: { id: string }) => o.id === id.outing)).toBe(true);
+  });
+
+  it('GET /api/attendance/outings/logged — HR/Admin only, lists the manager\'s auto-logged outing', async () => {
+    expect((await authed('get', '/api/attendance/outings/logged', t.employee)).status).toBe(403);
+    expect((await authed('get', '/api/attendance/outings/logged', t.manager)).status).toBe(403);
+    const res = await authed('get', '/api/attendance/outings/logged', t.hr);
+    expect(res.status).toBe(200);
+    expect(res.body.outings.every((o: { autoLogged: boolean }) => o.autoLogged)).toBe(true);
+    expect(res.body.outings.some((o: { date: string }) => o.date === '2026-09-16')).toBe(true);
+  });
+
+  it('POST /api/attendance/outings/:id/approve — 403 outside team, 404 unknown, 200 for the manager', async () => {
+    expect(
+      (await authed('post', `/api/attendance/outings/${id.outing}/approve`, t.otherEmployee)).status,
+    ).toBe(403);
+    expect((await authed('post', '/api/attendance/outings/nope/approve', t.manager)).status).toBe(404);
+
+    const res = await authed('post', `/api/attendance/outings/${id.outing}/approve`, t.manager);
+    expect(res.status).toBe(200);
+    expect(res.body.outing.status).toBe('APPROVED');
+
+    // already decided → 404 on a second decision
+    expect((await authed('post', `/api/attendance/outings/${id.outing}/reject`, t.manager)).status).toBe(404);
+  });
+});
+
 describe('leave', () => {
   it('GET /api/leave/balance — the caller\'s balances', async () => {
     const res = await authed('get', '/api/leave/balance', t.employee);

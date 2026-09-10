@@ -11,9 +11,10 @@ datasource db {
 // here, constrained by the zod schemas in src/lib and src/routes instead:
 //   Role: "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN"
 //   LeaveType: "ANNUAL" | "SICK" | "PERSONAL"
-//   LeaveStatus / CorrectionStatus: "PENDING" | "APPROVED" | "REJECTED"
+//   LeaveStatus / CorrectionStatus / OutingStatus: "PENDING" | "APPROVED" | "REJECTED"
 //   PayslipStatus: "OPEN" | "PAID"
 //   AttendanceLog.type: "CHECK_IN" | "CHECK_OUT"
+//   Outing.category: "MEETING" | "CLIENT" | "ERRAND" | "DOCUMENT" | "OTHER"
 
 /// Single workplace geofence + shift rule config. Seeded with one row (Family Studio)
 /// but modelled as a table so HR tooling can edit it later without a schema change.
@@ -91,7 +92,35 @@ model User {
   leaveBalances         LeaveBalance[]
   leaveRequests         LeaveRequest[]         @relation("Requester")
   decisions             LeaveRequest[]         @relation("Decider")
+  outings               Outing[]              @relation("OutingRequester")
+  outingDecisions       Outing[]              @relation("OutingDecider")
   payslips              Payslip[]
+}
+
+/// An employee stepping out during the shift — a client visit, a meeting, an
+/// errand, dropping off documents. The person stays checked in; an approved
+/// outing counts as worked time, so it never triggers a late mark or a
+/// missing-hours deduction. It's a record, not a pay input.
+///
+///  - EMPLOYEE          → status PENDING, decided by their manager (Approvals tab)
+///  - MANAGER/HR/ADMIN  → status APPROVED + autoLogged, HR is informed only
+model Outing {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("OutingRequester", fields: [userId], references: [id])
+  date        String // YYYY-MM-DD
+  fromTime    String // HH:MM, when they leave
+  toTime      String // HH:MM, expected return
+  category    String // MEETING | CLIENT | ERRAND | DOCUMENT | OTHER
+  purpose     String    @default("")
+  status      String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  autoLogged  Boolean   @default(false) // true = manager/HR/admin self-log, no approval
+  decidedById String?
+  decidedBy   User?     @relation("OutingDecider", fields: [decidedById], references: [id])
+  decidedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, date])
 }
 
 /// An employee's request to fix a missed or wrong check-in/out for one past day.

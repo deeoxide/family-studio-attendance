@@ -4,6 +4,8 @@ export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PayslipStatus = 'OPEN' | 'PAID';
 export type CorrectionStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PunctualityLevel = 'green' | 'yellow' | 'red';
+export type OutingCategory = 'MEETING' | 'CLIENT' | 'ERRAND' | 'DOCUMENT' | 'OTHER';
+export type OutingStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 /** Personal information carried on every user / person record. */
 export interface PersonalInfo {
@@ -243,6 +245,21 @@ export interface AttendanceCorrection {
   checkOutAt: string | null;
   reason: string;
   status: CorrectionStatus;
+  createdAt: string;
+  user?: { nameEn: string; nameLo: string; initials: string };
+}
+
+/** Stepping out during the shift — a meeting, a client visit, an errand. */
+export interface Outing {
+  id: string;
+  userId: string;
+  date: string;
+  fromTime: string;
+  toTime: string;
+  category: OutingCategory;
+  purpose: string;
+  status: OutingStatus;
+  autoLogged: boolean;
   createdAt: string;
   user?: { nameEn: string; nameLo: string; initials: string };
 }

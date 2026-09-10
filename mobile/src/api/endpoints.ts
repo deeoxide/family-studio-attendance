@@ -11,6 +11,8 @@ import type {
   LeaveRequest,
   LeaveType,
   Office,
+  Outing,
+  OutingCategory,
   PayrollRun,
   PayrollRunRow,
   Payslip,
@@ -66,6 +68,21 @@ export const attendanceApi = {
   // HR / Admin: direct edit, no request
   setManual: (input: { userId: string; date: string; checkIn?: string | null; checkOut?: string | null }) =>
     api.put<{ record: AttendanceRecord }>('/api/attendance/manual', input),
+
+  // Outings — stepping out during the shift
+  myOutings: () => api.get<{ outings: Outing[] }>('/api/attendance/outings'),
+  submitOuting: (input: {
+    date: string;
+    fromTime: string;
+    toTime: string;
+    category: OutingCategory;
+    purpose: string;
+  }) => api.post<{ outing: Outing }>('/api/attendance/outings', input),
+  pendingOutings: () => api.get<{ outings: Outing[] }>('/api/attendance/outings/pending'),
+  /** HR / Admin: outings managers logged for themselves (notification list). */
+  loggedOutings: () => api.get<{ outings: Outing[] }>('/api/attendance/outings/logged'),
+  approveOuting: (id: string) => api.post<{ outing: Outing }>(`/api/attendance/outings/${id}/approve`),
+  rejectOuting: (id: string) => api.post<{ outing: Outing }>(`/api/attendance/outings/${id}/reject`),
 
   /** GPS audit trail for one employee (Manager: their reports · HR/Admin: anyone). */
   logs: (userId: string, limit = 30) =>
