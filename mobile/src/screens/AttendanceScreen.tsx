@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RefreshControl, Text, View, type DimensionValue } from 'react-native';
+import { Pressable, RefreshControl, Text, View, type DimensionValue } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ScreenContainer } from '@/components/ScreenContainer';
 import { Body, Card, Divider, ErrorNote, Heading, Kicker, Muted, PrimaryButton, SecondaryButton, StatCell, StatRow, Tag, Toast } from '@/components/ui';
@@ -14,7 +14,7 @@ import { color, headingFont, bodyFont, kickerStyle } from '@/theme/tokens';
 import { elapsedClock, formatDateWeekdayShort, hhmm, hoursMinutes, lak, minutesToClock } from '@/lib/format';
 import { punctualityStyle } from '@/lib/punctuality';
 
-export function AttendanceScreen() {
+export function AttendanceScreen({ navigation, showBack }: { navigation?: any; showBack?: boolean }) {
   const { lang, t } = useLanguage();
   const qc = useQueryClient();
   const [toast, setToast] = useState<string | null>(null);
@@ -102,6 +102,13 @@ export function AttendanceScreen() {
         />
       }
     >
+      {showBack && navigation ? (
+        <Pressable onPress={() => navigation.goBack()} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} hitSlop={10}>
+          <Icon name="chevronLeft" size={15} color={color.accent700} />
+          <Text style={{ fontSize: 12.5, color: color.accent700, fontFamily: bodyFont(lang) }}>{t('tabMe')}</Text>
+        </Pressable>
+      ) : null}
+
       <Card style={{ gap: 15 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Kicker>{t('locCheck')}</Kicker>

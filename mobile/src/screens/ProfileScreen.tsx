@@ -6,6 +6,7 @@ import { ScreenContainer } from '@/components/ScreenContainer';
 import { Card, Muted, PrimaryButton, SecondaryButton, Toast } from '@/components/ui';
 import { TextField } from '@/components/Field';
 import { DateField } from '@/components/DateField';
+import { Icon } from '@/components/Icon';
 import { useAuth } from '@/state/AuthContext';
 import { useLanguage } from '@/state/LanguageContext';
 import { officeApi, authApi } from '@/api/endpoints';
@@ -18,7 +19,7 @@ const PREFS_KEY = 'attendance.prefs';
 type PrefKey = 'late' | 'payslip' | 'holiday';
 const DEFAULT_PREFS: Record<PrefKey, boolean> = { late: true, payslip: true, holiday: false };
 
-export function ProfileScreen() {
+export function ProfileScreen({ navigation }: { navigation?: any }) {
   const { user, logout, refreshMe } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const officeQ = useQuery({ queryKey: ['office'], queryFn: () => officeApi.get().then((r) => r.office) });
@@ -68,6 +69,22 @@ export function ProfileScreen() {
           <Muted style={{ marginTop: 2 }}>{`${pick(lang, user.roleTitleEn, user.roleTitleLo)} · ID ${user.employeeCode}`}</Muted>
         </View>
       </View>
+
+      {(user.role === 'HR' || user.role === 'ADMIN') && navigation ? (
+        <Pressable
+          onPress={() => navigation.navigate('MyAttendance')}
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: color.divider, borderRadius: radius.md, padding: 14, paddingHorizontal: 16 }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 }}>
+            <Icon name="clock" size={18} color={color.accent700} />
+            <View style={{ flexShrink: 1 }}>
+              <Text style={{ fontSize: 13, color: color.text }}>{t('myAttendance')}</Text>
+              <Muted style={{ marginTop: 2 }}>{t('myAttendanceNote')}</Muted>
+            </View>
+          </View>
+          <Icon name="chevronRight" size={16} color={color.neutral500} />
+        </Pressable>
+      ) : null}
 
       <PersonalInfoCard onSaved={refreshMe} onFlash={flash} />
 
