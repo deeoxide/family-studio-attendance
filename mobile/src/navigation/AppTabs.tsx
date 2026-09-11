@@ -7,6 +7,7 @@ import { Icon, ICONS } from '@/components/Icon';
 
 import { AttendanceScreen } from '@/screens/AttendanceScreen';
 import { LeaveScreen } from '@/screens/LeaveScreen';
+import { JobsScreen } from '@/screens/JobsScreen';
 import { PayrollScreen } from '@/screens/PayrollScreen';
 import { ApprovalsScreen } from '@/screens/ApprovalsScreen';
 import { PayrollRunScreen } from '@/screens/PayrollRunScreen';
@@ -20,6 +21,7 @@ const TAB_CONFIG = {
   EMPLOYEE: [
     { name: 'Attendance', icon: 'clock', labelKey: 'tabAtt', component: AttendanceScreen },
     { name: 'Leave', icon: 'calendar', labelKey: 'tabLeave', component: LeaveScreen },
+    { name: 'Jobs', icon: 'briefcase', labelKey: 'tabJobs', component: JobsScreen },
     { name: 'Payroll', icon: 'card', labelKey: 'tabPay', component: PayrollScreen },
     { name: 'Profile', icon: 'person', labelKey: 'tabMe', component: ProfileStack },
   ],

@@ -5,6 +5,7 @@ import { ScreenContainer } from '@/components/ScreenContainer';
 import { Body, Card, Heading, Muted, Segmented, StatCell, StatRow, Tag } from '@/components/ui';
 import { Icon } from '@/components/Icon';
 import { PunctualityBoard } from '@/components/PunctualityBoard';
+import { JobOrdersTeamView } from '@/components/JobOrdersTeamView';
 import { useLanguage } from '@/state/LanguageContext';
 import { attendanceApi } from '@/api/endpoints';
 import { color, headingFont } from '@/theme/tokens';
@@ -14,7 +15,7 @@ import { todayISODate } from '@/lib/date';
 
 export function TeamScreen({ navigation }: any) {
   const { lang, t } = useLanguage();
-  const [tab, setTab] = useState<'roll' | 'kpi'>('roll');
+  const [tab, setTab] = useState<'roll' | 'kpi' | 'jobs'>('roll');
   const teamQ = useQuery({ queryKey: ['attendance', 'team-today'], queryFn: () => attendanceApi.teamToday().then((r) => r.team) });
 
   const team = teamQ.data ?? [];
@@ -30,10 +31,13 @@ export function TeamScreen({ navigation }: any) {
         options={[
           { key: 'roll', label: t('rollToday') },
           { key: 'kpi', label: t('punctualityKpi') },
+          { key: 'jobs', label: t('jobOrders') },
         ]}
       />
 
-      {tab === 'kpi' ? (
+      {tab === 'jobs' ? (
+        <JobOrdersTeamView />
+      ) : tab === 'kpi' ? (
         <PunctualityBoard onOpenPerson={(id) => navigation.navigate('PersonDetail', { id })} />
       ) : (
         <>

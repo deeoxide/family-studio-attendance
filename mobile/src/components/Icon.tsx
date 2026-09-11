@@ -12,6 +12,8 @@ export const ICONS = {
   check: 'M20 6 9 17l-5-5',
   chevronRight: 'm9 18 6-6-6-6',
   chevronLeft: 'm15 18-6-6 6-6',
+  briefcase: 'M2 7h20v14H2zM16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16',
+  download: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3',
 } as const;
 
 export function Icon({ name, size = 20, color = '#201f1d' }: { name: keyof typeof ICONS; size?: number; color?: string }) {

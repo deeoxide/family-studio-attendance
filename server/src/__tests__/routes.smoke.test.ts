@@ -540,6 +540,63 @@ describe('people (role + scope gated)', () => {
   });
 });
 
+describe('job orders (Open Job)', () => {
+  it('POST /api/jobs — 403 for manager/HR, 201 for an employee with a generated job order no.', async () => {
+    const body = { clientCode: 'CL-900', workType: 'INTERNAL', task: 'Smoke test job' };
+    expect((await authed('post', '/api/jobs', t.manager).send(body)).status).toBe(403);
+    expect((await authed('post', '/api/jobs', t.hr).send(body)).status).toBe(403);
+
+    const res = await authed('post', '/api/jobs', t.employee).send(body);
+    expect(res.status).toBe(201);
+    expect(res.body.jobOrder.status).toBe('OPEN');
+    expect(res.body.jobOrder.jobOrderNo).toMatch(/^JO\d{2}\d{4}-001$/);
+    id.jobOrder = res.body.jobOrder.id;
+  });
+
+  it('POST /api/jobs — 400 on an unknown work type', async () => {
+    const res = await authed('post', '/api/jobs', t.employee).send({ clientCode: 'CL-1', workType: 'NOPE', task: 'x' });
+    expect(res.status).toBe(400);
+  });
+
+  it("GET /api/jobs — the caller's own job orders only", async () => {
+    const res = await authed('get', '/api/jobs', t.employee);
+    expect(res.status).toBe(200);
+    expect(res.body.jobOrders.some((j: { id: string }) => j.id === id.jobOrder)).toBe(true);
+  });
+
+  it('GET /api/jobs/team — 403 employee, 200 manager (their reports), 200 HR (everyone)', async () => {
+    expect((await authed('get', '/api/jobs/team', t.employee)).status).toBe(403);
+
+    const mgr = await authed('get', '/api/jobs/team', t.manager);
+    expect(mgr.status).toBe(200);
+    expect(mgr.body.jobOrders.some((j: { id: string }) => j.id === id.jobOrder)).toBe(true);
+
+    expect((await authed('get', '/api/jobs/team', t.hr)).status).toBe(200);
+  });
+
+  it('GET /api/jobs/export — 403 employee, 200 CSV with the 8 documented columns', async () => {
+    expect((await authed('get', '/api/jobs/export', t.employee)).status).toBe(403);
+
+    const res = await authed('get', '/api/jobs/export', t.hr);
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/text\/csv/);
+    expect(res.text.split('\r\n')[0]).toBe(
+      'Job Order No.,Name of Person,Client Code,Type of Work,Task,Date of Open Job,Status,Date of Close Job',
+    );
+  });
+
+  it("PATCH /api/jobs/:id/status — owner only (404 for someone else), closing sets today's date", async () => {
+    expect(
+      (await authed('patch', `/api/jobs/${id.jobOrder}/status`, t.otherEmployee).send({ status: 'CLOSED' })).status,
+    ).toBe(404);
+
+    const res = await authed('patch', `/api/jobs/${id.jobOrder}/status`, t.employee).send({ status: 'CLOSED' });
+    expect(res.status).toBe(200);
+    expect(res.body.jobOrder.status).toBe('CLOSED');
+    expect(res.body.jobOrder.closeDate).toBeTruthy();
+  });
+});
+
 describe('refactor bug fixes stay fixed', () => {
   it('B2 — a negative or non-numeric ?limit falls back to a sane page, never a tail slice', async () => {
     for (const limit of ['-5', 'abc', '0']) {

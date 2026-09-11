@@ -9,6 +9,8 @@ export type CorrectionStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PunctualityLevel = 'green' | 'yellow' | 'red';
 export type OutingCategory = 'MEETING' | 'CLIENT' | 'ERRAND' | 'DOCUMENT' | 'OTHER';
 export type OutingStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type JobWorkType = 'INTERNAL' | 'EXTERNAL';
+export type JobStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 
 /** Personal information carried on every user / person record. */
 export interface PersonalInfo {
@@ -264,6 +266,21 @@ export interface Outing {
   purpose: string;
   status: OutingStatus;
   autoLogged: boolean;
+  createdAt: string;
+  user?: { nameEn: string; nameLo: string; initials: string };
+}
+
+/** Open Job — a work order an employee logs against a client or production. */
+export interface JobOrder {
+  id: string;
+  jobOrderNo: string;
+  userId: string;
+  clientCode: string;
+  workType: JobWorkType;
+  task: string;
+  openDate: string;
+  status: JobStatus;
+  closeDate: string | null;
   createdAt: string;
   user?: { nameEn: string; nameLo: string; initials: string };
 }

@@ -5,6 +5,9 @@ import type {
   AttendanceRecord,
   AttendanceSummary,
   Holiday,
+  JobOrder,
+  JobStatus,
+  JobWorkType,
   KpiBoard,
   LeaveBalance,
   LeaveEntitlement,
@@ -111,6 +114,17 @@ export const payrollApi = {
   /** HR / Admin: set this month's overtime / allowance for one person. */
   setOpenFigures: (userId: string, input: { ot?: number; allowance?: number }) =>
     api.patch<{ row: PayrollRunRow }>(`/api/payroll/run/${userId}`, input),
+};
+
+export const jobOrderApi = {
+  create: (input: { clientCode: string; workType: JobWorkType; task: string }) =>
+    api.post<{ jobOrder: JobOrder }>('/api/jobs', input),
+  mine: () => api.get<{ jobOrders: JobOrder[] }>('/api/jobs'),
+  /** Manager: their direct reports' job orders · HR/Admin: everyone's. */
+  team: () => api.get<{ jobOrders: JobOrder[] }>('/api/jobs/team'),
+  setStatus: (id: string, status: JobStatus) => api.patch<{ jobOrder: JobOrder }>(`/api/jobs/${id}/status`, { status }),
+  /** CSV of the same team scope as `team()`, for the frequency/statistics export. */
+  exportCsv: () => api.getText('/api/jobs/export'),
 };
 
 export const peopleApi = {

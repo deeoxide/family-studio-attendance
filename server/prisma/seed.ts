@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { computePay } from '../src/lib/payroll';
 import { workingDaysBetween } from '../src/lib/leave';
+import { buildJobOrderNo, type WorkType } from '../src/lib/jobOrderNumber';
 
 type LeaveType = 'ANNUAL' | 'SICK' | 'PERSONAL';
 type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -76,6 +77,7 @@ const OPEN_PERIOD = '2026-09';
 async function main() {
   console.log('Seeding…');
 
+  await prisma.jobOrder.deleteMany();
   await prisma.payslip.deleteMany();
   await prisma.leaveRequest.deleteMany();
   await prisma.leaveBalance.deleteMany();
@@ -207,6 +209,37 @@ async function main() {
         status: l.status,
         decidedById: l.deciderCode ? byCode[l.deciderCode] : null,
         decidedAt: l.deciderCode ? new Date() : null,
+      },
+    });
+  }
+
+  // A few Open Job entries this month, across two employees — enough to show
+  // the numbering scheme (internal/external counted separately) and give the
+  // Manager/HR CSV export something to demonstrate.
+  const jobOrderSeed: Array<{
+    userId: string; clientCode: string; workType: WorkType; task: string;
+    openDate: string; status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED'; closeDate?: string;
+  }> = [
+    { userId: pv, clientCode: 'STUDIO', workType: 'INTERNAL', task: 'Retouch September portrait batch', openDate: '2026-09-02', status: 'CLOSED', closeDate: '2026-09-04' },
+    { userId: pv, clientCode: 'CL-118', workType: 'EXTERNAL', task: 'Wedding shoot, Vientiane riverside', openDate: '2026-09-05', status: 'CLOSED', closeDate: '2026-09-06' },
+    { userId: pv, clientCode: 'CL-122', workType: 'EXTERNAL', task: 'Product photography, coffee brand', openDate: '2026-09-08', status: 'IN_PROGRESS' },
+    { userId: byCode['0202'], clientCode: 'STUDIO', workType: 'INTERNAL', task: 'Archive and tag Q3 shoots', openDate: '2026-09-03', status: 'OPEN' },
+  ];
+  const jobOrderCount: Record<string, number> = {};
+  for (const j of jobOrderSeed) {
+    const key = `${j.openDate.slice(0, 7)}-${j.workType}`;
+    const seq = jobOrderCount[key] ?? 0;
+    jobOrderCount[key] = seq + 1;
+    await prisma.jobOrder.create({
+      data: {
+        jobOrderNo: buildJobOrderNo(j.openDate, j.workType, seq),
+        userId: j.userId,
+        clientCode: j.clientCode,
+        workType: j.workType,
+        task: j.task,
+        openDate: j.openDate,
+        status: j.status,
+        closeDate: j.closeDate ?? null,
       },
     });
   }

@@ -30,8 +30,21 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
+/** Fetch a non-JSON response (e.g. a CSV export) as plain text. */
+async function requestText(path: string): Promise<string> {
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: authToken ? { authorization: `Bearer ${authToken}` } : {},
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, (body as any).error || res.statusText || 'Request failed');
+  }
+  return res.text();
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
+  getText: (path: string) => requestText(path),
   post: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'POST', body: data !== undefined ? JSON.stringify(data) : undefined }),
   patch: <T>(path: string, data?: unknown) =>

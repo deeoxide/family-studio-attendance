@@ -5,6 +5,7 @@ import { ScreenContainer } from '@/components/ScreenContainer';
 import { Body, Card, Muted, PrimaryButton, Segmented } from '@/components/ui';
 import { Icon } from '@/components/Icon';
 import { PunctualityBoard, LevelPill } from '@/components/PunctualityBoard';
+import { JobOrdersTeamView } from '@/components/JobOrdersTeamView';
 import { useLanguage } from '@/state/LanguageContext';
 import { peopleApi } from '@/api/endpoints';
 import { color, headingFont } from '@/theme/tokens';
@@ -12,7 +13,7 @@ import { pick, lak } from '@/lib/format';
 
 export function PeopleScreen({ navigation }: any) {
   const { lang, t } = useLanguage();
-  const [tab, setTab] = useState<'directory' | 'kpi'>('directory');
+  const [tab, setTab] = useState<'directory' | 'kpi' | 'jobs'>('directory');
   const peopleQ = useQuery({ queryKey: ['people'], queryFn: () => peopleApi.list() });
   const canAdminister = peopleQ.data?.canAdminister ?? false;
   const openPerson = (id: string) => navigation.navigate('PersonDetail', { id });
@@ -25,10 +26,13 @@ export function PeopleScreen({ navigation }: any) {
         options={[
           { key: 'directory', label: t('directory') },
           { key: 'kpi', label: t('punctualityKpi') },
+          { key: 'jobs', label: t('jobOrders') },
         ]}
       />
 
-      {tab === 'kpi' ? (
+      {tab === 'jobs' ? (
+        <JobOrdersTeamView />
+      ) : tab === 'kpi' ? (
         <PunctualityBoard onOpenPerson={openPerson} />
       ) : (
         <>
