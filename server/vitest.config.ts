@@ -1,18 +1,25 @@
 import { defineConfig } from 'vitest/config';
-import path from 'node:path';
+import 'dotenv/config';
 
-// Integration tests run against their own throwaway SQLite file, never dev.db.
-// An absolute path keeps the Prisma CLI (schema-relative) and the Prisma Client
-// (cwd-relative) pointing at the same file.
-const testDbPath = path.join(__dirname, 'prisma', 'test.db').replace(/\\/g, '/');
+// Integration tests run against their own throwaway Postgres schema, never the
+// dev database's public schema. They reuse whatever Postgres DATABASE_URL dev
+// already points at (same server, same credentials) and just isolate the
+// schema, so no second database has to be provisioned to run `npm test`.
+function testDatabaseUrl() {
+  const base = process.env.DATABASE_URL;
+  if (!base) throw new Error('DATABASE_URL must be set (see .env.example) to run tests');
+  const url = new URL(base);
+  url.searchParams.set('schema', 'test');
+  return url.toString();
+}
 
 export default defineConfig({
   test: {
     env: {
-      DATABASE_URL: `file:${testDbPath}`,
+      DATABASE_URL: testDatabaseUrl(),
       JWT_SECRET: 'test-secret',
     },
-    // One shared SQLite file — don't let files race each other.
+    // One shared schema — don't let files race each other.
     fileParallelism: false,
     // Provisioning the test DB (db push + seed) runs in a beforeAll.
     hookTimeout: 120_000,

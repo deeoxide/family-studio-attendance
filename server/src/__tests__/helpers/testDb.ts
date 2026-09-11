@@ -4,19 +4,20 @@ import path from 'node:path';
 const serverRoot = path.resolve(__dirname, '../../..');
 
 /**
- * Rebuild the throwaway test database from scratch and seed it.
+ * Rebuild the throwaway test schema from scratch and seed it.
  *
- * `DATABASE_URL` is already set to the test file by vitest.config.ts, so the
- * Prisma CLI and the seed script both write there, never to dev.db.
- * `--force-reset` drops everything first, so every run starts from the same
- * known fixture (see prisma/seed.ts).
+ * `DATABASE_URL` is already pointed at the isolated `test` Postgres schema by
+ * vitest.config.ts, so the Prisma CLI and the seed script both write there,
+ * never to the dev database's schema. `--force-reset` drops everything in
+ * that schema first, so every run starts from the same known fixture (see
+ * prisma/seed.ts).
  */
 export function provisionTestDb() {
   const url = process.env.DATABASE_URL ?? '';
-  // Hard stop: never let --force-reset run against dev.db (or anything that
-  // isn't the dedicated test file vitest.config.ts points us at).
-  if (!/test\.db(\?|$)/.test(url)) {
-    throw new Error(`refusing to provision: DATABASE_URL is not a *test.db (${url || 'unset'})`);
+  // Hard stop: never let --force-reset run against anything but the dedicated
+  // test schema vitest.config.ts points us at.
+  if (!/[?&]schema=test(&|$)/.test(url)) {
+    throw new Error(`refusing to provision: DATABASE_URL is not the isolated test schema (${url || 'unset'})`);
   }
 
   const env = { ...process.env, DATABASE_URL: url };

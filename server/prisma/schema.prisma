@@ -3,12 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// SQLite has no native enum type, so roles/types/statuses are plain strings
-// here, constrained by the zod schemas in src/lib and src/routes instead:
+// Roles/types/statuses are plain strings rather than native Postgres enums
+// (kept from the original SQLite schema, which has no enum type) so adding a
+// value never needs a migration — they're constrained by the zod schemas in
+// src/lib and src/routes instead:
 //   Role: "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN"
 //   LeaveType: "ANNUAL" | "SICK" | "PERSONAL" | "UNPAID"
 //   LeaveStatus / CorrectionStatus / OutingStatus: "PENDING" | "APPROVED" | "REJECTED"
@@ -95,6 +97,7 @@ model User {
   outings               Outing[]              @relation("OutingRequester")
   outingDecisions       Outing[]              @relation("OutingDecider")
   payslips              Payslip[]
+  jobOrders             JobOrder[]
 }
 
 /// An employee stepping out during the shift — a client visit, a meeting, an
@@ -213,4 +216,28 @@ model Payslip {
   paidAt        DateTime?
 
   @@unique([userId, periodMonth])
+}
+
+/// A work order an employee logs against a client or production — the studio's
+/// job tracker. jobOrderNo is generated as JO<seq><MMYY>-<code> (see
+/// src/lib/jobOrderNumber.ts): seq is a two-digit count that resets every
+/// calendar month and is kept separately per work-type category, MMYY is the
+/// month + year the job was opened, and code is 001 for studio-internal work
+/// or 002 for external production.
+/// EMPLOYEE creates and tracks their own; MANAGER (their direct reports) / HR
+/// / ADMIN (everyone) can view and export the roster for frequency stats.
+model JobOrder {
+  id         String   @id @default(cuid())
+  jobOrderNo String   @unique
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  clientCode String
+  workType   String // INTERNAL | EXTERNAL
+  task       String
+  openDate   String // YYYY-MM-DD
+  status     String   @default("OPEN") // OPEN | IN_PROGRESS | CLOSED
+  closeDate  String? // YYYY-MM-DD, set when status becomes CLOSED
+  createdAt  DateTime @default(now())
+
+  @@index([userId, openDate])
 }
