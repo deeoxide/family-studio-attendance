@@ -117,7 +117,7 @@ export const payrollApi = {
 };
 
 export const jobOrderApi = {
-  create: (input: { clientCode: string; workType: JobWorkType; task: string }) =>
+  create: (input: { project?: string; clientCode: string; workType: JobWorkType; task: string }) =>
     api.post<{ jobOrder: JobOrder }>('/api/jobs', input),
   mine: () => api.get<{ jobOrders: JobOrder[] }>('/api/jobs'),
   /** Manager: their direct reports' job orders · HR/Admin: everyone's. */

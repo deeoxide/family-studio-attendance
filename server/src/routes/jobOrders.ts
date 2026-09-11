@@ -16,9 +16,9 @@ import { toCsv } from '../lib/csv';
  *  - MANAGER            → view + export their direct reports' job orders
  *  - HR / ADMIN         → view + export everyone's
  *
- * A row is: job order no., name of person, client code, type of work, task,
- * date opened, status, date closed. See lib/jobOrderNumber.ts for the
- * JO<seq><MMYY>-<code> numbering scheme.
+ * A row is: job order no., name of person, project, client code, type of
+ * work, task, date opened, status, date closed. See lib/jobOrderNumber.ts
+ * for the JO<seq><MMYY>-<code> numbering scheme.
  */
 export const jobOrdersRouter = Router();
 jobOrdersRouter.use(requireAuth);
@@ -32,6 +32,7 @@ const WORK_TYPE_LABEL: Record<WorkType, string> = { INTERNAL: 'Studio Internal',
 const userSummary = { select: { nameEn: true, nameLo: true, initials: true } } as const;
 
 const createSchema = z.object({
+  project: z.string().trim().max(80).optional().default(''),
   clientCode: z.string().trim().min(1).max(40),
   workType: z.enum(WORK_TYPES),
   task: z.string().trim().min(1).max(500),
@@ -39,7 +40,7 @@ const createSchema = z.object({
 
 /** Log a new job order for the signed-in employee. Open date is always today. */
 jobOrdersRouter.post('/', requireRole('EMPLOYEE'), async (req, res) => {
-  const { clientCode, workType, task } = parse(createSchema, req.body, 'Invalid job order');
+  const { project, clientCode, workType, task } = parse(createSchema, req.body, 'Invalid job order');
   const openDate = todayISO();
   const monthPrefix = openDate.slice(0, 7); // YYYY-MM
 
@@ -53,7 +54,7 @@ jobOrdersRouter.post('/', requireRole('EMPLOYEE'), async (req, res) => {
     const jobOrderNo = buildJobOrderNo(openDate, workType, existingCount);
     try {
       const jobOrder = await prisma.jobOrder.create({
-        data: { jobOrderNo, userId: req.user!.id, clientCode: clientCode.trim(), workType, task: task.trim(), openDate },
+        data: { jobOrderNo, userId: req.user!.id, project: project.trim(), clientCode: clientCode.trim(), workType, task: task.trim(), openDate },
       });
       return res.status(201).json({ jobOrder });
     } catch (e: any) {
@@ -94,6 +95,7 @@ jobOrdersRouter.get('/export', requireRole('MANAGER', 'HR', 'ADMIN'), async (req
   const rows = jobOrders.map((j) => [
     j.jobOrderNo,
     j.user.nameEn,
+    j.project,
     j.clientCode,
     WORK_TYPE_LABEL[j.workType as WorkType],
     j.task,
@@ -102,7 +104,7 @@ jobOrdersRouter.get('/export', requireRole('MANAGER', 'HR', 'ADMIN'), async (req
     j.closeDate ?? '',
   ]);
   const csv = toCsv(
-    ['Job Order No.', 'Name of Person', 'Client Code', 'Type of Work', 'Task', 'Date of Open Job', 'Status', 'Date of Close Job'],
+    ['Job Order No.', 'Name of Person', 'Project', 'Client Code', 'Type of Work', 'Task', 'Date of Open Job', 'Status', 'Date of Close Job'],
     rows,
   );
 

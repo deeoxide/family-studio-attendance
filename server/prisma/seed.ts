@@ -217,13 +217,13 @@ async function main() {
   // the numbering scheme (internal/external counted separately) and give the
   // Manager/HR CSV export something to demonstrate.
   const jobOrderSeed: Array<{
-    userId: string; clientCode: string; workType: WorkType; task: string;
+    userId: string; project?: string; clientCode: string; workType: WorkType; task: string;
     openDate: string; status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED'; closeDate?: string;
   }> = [
-    { userId: pv, clientCode: 'STUDIO', workType: 'INTERNAL', task: 'Retouch September portrait batch', openDate: '2026-09-02', status: 'CLOSED', closeDate: '2026-09-04' },
-    { userId: pv, clientCode: 'CL-118', workType: 'EXTERNAL', task: 'Wedding shoot, Vientiane riverside', openDate: '2026-09-05', status: 'CLOSED', closeDate: '2026-09-06' },
-    { userId: pv, clientCode: 'CL-122', workType: 'EXTERNAL', task: 'Product photography, coffee brand', openDate: '2026-09-08', status: 'IN_PROGRESS' },
-    { userId: byCode['0202'], clientCode: 'STUDIO', workType: 'INTERNAL', task: 'Archive and tag Q3 shoots', openDate: '2026-09-03', status: 'OPEN' },
+    { userId: pv, project: 'Q3 archive', clientCode: 'STUDIO', workType: 'INTERNAL', task: 'Retouch September portrait batch', openDate: '2026-09-02', status: 'CLOSED', closeDate: '2026-09-04' },
+    { userId: pv, project: 'Riverside Wedding', clientCode: 'CL-118', workType: 'EXTERNAL', task: 'Wedding shoot, Vientiane riverside', openDate: '2026-09-05', status: 'CLOSED', closeDate: '2026-09-06' },
+    { userId: pv, project: 'Autumn Coffee Campaign', clientCode: 'CL-122', workType: 'EXTERNAL', task: 'Product photography, coffee brand', openDate: '2026-09-08', status: 'IN_PROGRESS' },
+    { userId: byCode['0202'], project: 'Q3 archive', clientCode: 'STUDIO', workType: 'INTERNAL', task: 'Archive and tag Q3 shoots', openDate: '2026-09-03', status: 'OPEN' },
   ];
   const jobOrderCount: Record<string, number> = {};
   for (const j of jobOrderSeed) {
@@ -234,6 +234,7 @@ async function main() {
       data: {
         jobOrderNo: buildJobOrderNo(j.openDate, j.workType, seq),
         userId: j.userId,
+        project: j.project ?? '',
         clientCode: j.clientCode,
         workType: j.workType,
         task: j.task,

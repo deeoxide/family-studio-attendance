@@ -104,6 +104,7 @@ export function JobOrdersTeamView() {
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <View style={{ flex: 1 }}>
                   <Body style={{ fontSize: 13, fontFamily: headingFont(lang) }}>{j.jobOrderNo}</Body>
+                  {j.project ? <Body style={{ fontSize: 12.5, marginTop: 2 }}>{j.project}</Body> : null}
                   <Muted style={{ marginTop: 2 }}>
                     {`${j.user ? pick(lang, j.user.nameEn, j.user.nameLo) : ''} · ${j.clientCode} · ${t(WORK_TYPE_KEY[j.workType])}`}
                   </Muted>

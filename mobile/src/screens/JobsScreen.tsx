@@ -60,6 +60,7 @@ export function JobsScreen() {
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <View style={{ flex: 1 }}>
                   <Heading style={{ fontSize: 15 }}>{j.jobOrderNo}</Heading>
+                  {j.project ? <Body style={{ fontSize: 13, marginTop: 2 }}>{j.project}</Body> : null}
                   <Muted style={{ marginTop: 3 }}>{`${j.clientCode} · ${t(WORK_TYPE_KEY[j.workType])}`}</Muted>
                 </View>
                 <Tag label={t(STATUS_KEY[j.status])} variant={STATUS_VARIANT[j.status]} />

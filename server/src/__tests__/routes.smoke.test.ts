@@ -542,15 +542,22 @@ describe('people (role + scope gated)', () => {
 
 describe('job orders (Open Job)', () => {
   it('POST /api/jobs — 403 for manager/HR, 201 for an employee with a generated job order no.', async () => {
-    const body = { clientCode: 'CL-900', workType: 'INTERNAL', task: 'Smoke test job' };
+    const body = { project: 'Autumn Catalog', clientCode: 'CL-900', workType: 'INTERNAL', task: 'Smoke test job' };
     expect((await authed('post', '/api/jobs', t.manager).send(body)).status).toBe(403);
     expect((await authed('post', '/api/jobs', t.hr).send(body)).status).toBe(403);
 
     const res = await authed('post', '/api/jobs', t.employee).send(body);
     expect(res.status).toBe(201);
     expect(res.body.jobOrder.status).toBe('OPEN');
+    expect(res.body.jobOrder.project).toBe('Autumn Catalog');
     expect(res.body.jobOrder.jobOrderNo).toMatch(/^JO\d{2}\d{4}-001$/);
     id.jobOrder = res.body.jobOrder.id;
+  });
+
+  it('POST /api/jobs — project is optional, defaults to empty', async () => {
+    const res = await authed('post', '/api/jobs', t.employee).send({ clientCode: 'CL-901', workType: 'INTERNAL', task: 'No project given' });
+    expect(res.status).toBe(201);
+    expect(res.body.jobOrder.project).toBe('');
   });
 
   it('POST /api/jobs — 400 on an unknown work type', async () => {
@@ -574,14 +581,14 @@ describe('job orders (Open Job)', () => {
     expect((await authed('get', '/api/jobs/team', t.hr)).status).toBe(200);
   });
 
-  it('GET /api/jobs/export — 403 employee, 200 CSV with the 8 documented columns', async () => {
+  it('GET /api/jobs/export — 403 employee, 200 CSV with the documented columns', async () => {
     expect((await authed('get', '/api/jobs/export', t.employee)).status).toBe(403);
 
     const res = await authed('get', '/api/jobs/export', t.hr);
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/text\/csv/);
     expect(res.text.split('\r\n')[0]).toBe(
-      'Job Order No.,Name of Person,Client Code,Type of Work,Task,Date of Open Job,Status,Date of Close Job',
+      'Job Order No.,Name of Person,Project,Client Code,Type of Work,Task,Date of Open Job,Status,Date of Close Job',
     );
   });
 

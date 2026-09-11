@@ -26,19 +26,21 @@ export function NewJobOrderModal({
   const { lang, t } = useLanguage();
   const qc = useQueryClient();
   const [workType, setWorkType] = useState<JobWorkType>('INTERNAL');
+  const [project, setProject] = useState('');
   const [clientCode, setClientCode] = useState('');
   const [task, setTask] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
     setWorkType('INTERNAL');
+    setProject('');
     setClientCode('');
     setTask('');
     setError(null);
   };
 
   const createMut = useMutation({
-    mutationFn: () => jobOrderApi.create({ clientCode: clientCode.trim(), workType, task: task.trim() }),
+    mutationFn: () => jobOrderApi.create({ project: project.trim(), clientCode: clientCode.trim(), workType, task: task.trim() }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['jobOrders'] });
       onCreated(t('jobCreated'));
@@ -86,6 +88,17 @@ export function NewJobOrderModal({
                 );
               })}
             </View>
+          </View>
+
+          <View>
+            <Text style={{ fontFamily: bodyFont(lang), fontSize: 12, color: color.neutral700, marginBottom: 6 }}>{t('project')}</Text>
+            <TextInput
+              value={project}
+              onChangeText={setProject}
+              placeholder={t('projectHint')}
+              placeholderTextColor={color.neutral500}
+              style={{ minHeight: 46, borderWidth: 1, borderColor: color.divider, borderRadius: radius.md, paddingHorizontal: 12, fontFamily: bodyFont(lang), fontSize: 14, color: color.text }}
+            />
           </View>
 
           <View>

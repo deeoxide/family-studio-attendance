@@ -231,6 +231,7 @@ model JobOrder {
   jobOrderNo String   @unique
   userId     String
   user       User     @relation(fields: [userId], references: [id])
+  project    String   @default("") // named project/campaign this job belongs to, optional
   clientCode String
   workType   String // INTERNAL | EXTERNAL
   task       String

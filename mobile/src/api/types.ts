@@ -275,6 +275,7 @@ export interface JobOrder {
   id: string;
   jobOrderNo: string;
   userId: string;
+  project: string;
   clientCode: string;
   workType: JobWorkType;
   task: string;
