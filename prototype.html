@@ -1,0 +1,1160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Family Studio — Attendance Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Noto+Sans+Lao:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#f3f2f2; --surface:#eae9e9; --text:#201f1d; --accent:#b68235;
+    --divider:rgba(32,31,29,0.16);
+    --n100:#f8f4f4; --n200:#eae7e7; --n300:#d7d3d3; --n500:#9b9797; --n600:#7d7979;
+    --n700:#605d5d; --n800:#444141; --n900:#2d2b2b;
+    --a100:#fff3e4; --a200:#ffe3bf; --a300:#facb8d; --a700:#7d5411; --a800:#5a3b0a; --a900:#3a270d;
+    --ok:#3f7d4f; --okBg:#eef3ee; --okBorder:#cfe0d1;
+    --danger:#b0402f; --dangerBg:#f7ebe8; --dangerBorder:#e6c9c2;
+    --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --lao:"Noto Sans Lao","Phetsarath OT","Leelawadee UI","Lao UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100vh; padding:28px 16px 60px;
+  }
+  body[data-lang="lo"]{font-family:var(--lao)}
+  a{color:inherit}
+
+  /* ── prototype toolbar (outside the phone) ─────────────────────── */
+  .toolbar{
+    width:100%; max-width:412px; margin-bottom:18px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .toolbar h1{
+    font-size:15px; margin:0; font-weight:600; letter-spacing:.2px;
+  }
+  .toolbar p{margin:0; font-size:12px; color:var(--n600); line-height:1.5}
+  .toolbar .row{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px}
+  .chip{
+    font:inherit; font-size:11.5px; cursor:pointer;
+    border:1px solid var(--divider); background:#fff; color:var(--n700);
+    padding:6px 11px; border-radius:4px; letter-spacing:.3px;
+  }
+  .chip[aria-pressed="true"]{background:var(--a100); border-color:var(--accent); color:var(--a800)}
+  .chip:disabled{opacity:.4; cursor:default}
+
+  /* ── phone frame ──────────────────────────────────────────────── */
+  .phone{
+    width:390px; height:800px; max-width:100%;
+    background:#fff; border-radius:38px; overflow:hidden;
+    border:1px solid var(--divider);
+    box-shadow:0 2px 4px rgba(45,43,43,.14), 0 24px 60px rgba(45,43,43,.20);
+    display:flex; flex-direction:column; position:relative;
+  }
+  .statusbar{
+    height:34px; flex:none; display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; font-size:12px; font-weight:600; color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
+  .statusbar .dots{letter-spacing:2px; color:var(--n700)}
+
+  .app{flex:1; display:flex; flex-direction:column; min-height:0}
+
+  /* header */
+  .hdr{
+    padding:8px 20px 12px; display:flex; align-items:flex-end; justify-content:space-between;
+    gap:12px; border-bottom:1px solid var(--divider);
+  }
+  .kicker{font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--a700)}
+  .hdr .title{font-size:21px; font-weight:600; margin-top:2px; line-height:1.15}
+  body[data-lang="lo"] .hdr .title{font-weight:600}
+  .hdr-right{display:flex; align-items:center; gap:9px}
+  .lang{display:flex; border:1px solid var(--divider); border-radius:4px; overflow:hidden}
+  .lang button{
+    font:inherit; font-size:11.5px; min-width:38px; height:34px; border:0; cursor:pointer;
+    background:#fff; color:var(--n700);
+  }
+  .lang button + button{border-left:1px solid var(--divider)}
+  .lang button[aria-pressed="true"]{background:var(--a100); color:var(--a800)}
+  .avatar{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--divider);
+    background:var(--n100); display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:600; color:var(--n800); font-family:var(--serif);
+  }
+
+  /* body */
+  .body{flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px}
+  .body::-webkit-scrollbar{width:0}
+
+  /* tab bar */
+  .tabs{
+    flex:none; display:flex; border-top:1px solid var(--divider); background:#fff;
+    padding-bottom:14px;
+  }
+  .tabs button{
+    flex:1; border:0; background:none; cursor:pointer; font:inherit;
+    padding:10px 2px 4px; display:flex; flex-direction:column; align-items:center; gap:3px;
+    color:var(--n600);
+  }
+  .tabs button[aria-pressed="true"]{color:var(--a800)}
+  .tabs .ti{width:20px; height:20px; display:block}
+  .tabs .tl{font-size:10px; letter-spacing:.2px}
+
+  /* ── components ──────────────────────────────────────────────── */
+  .card{border:1px solid var(--divider); border-radius:4px; padding:16px}
+  .card.pad0{padding:0}
+  .card.accent{border-color:var(--a200); background:var(--a100)}
+  .card.flush > * + *{border-top:1px solid var(--divider)}
+  .h{font-size:17px; font-weight:600}
+  body[data-lang="lo"] .h{font-weight:600}
+  .muted{font-size:11.5px; line-height:1.5; color:var(--n700)}
+  .row{display:flex; justify-content:space-between; align-items:center; gap:12px}
+  .row.baseline{align-items:baseline}
+  .divider{height:1px; background:var(--divider); margin:14px 0}
+  .tag{
+    display:inline-block; align-self:flex-start; font-size:11px; padding:3px 10px; border-radius:3px;
+    background:var(--n100); color:var(--n800);
+  }
+  .tag.accent{background:var(--a100); color:var(--a800)}
+  .tag.outline{background:transparent; border:1px solid var(--accent); color:var(--accent)}
+  .tag.ok{background:var(--okBg); color:var(--ok)}
+  .btn{
+    width:100%; min-height:54px; border:1.5px solid var(--accent); border-radius:4px;
+    background:var(--a100); color:var(--a800); font:inherit; font-size:16px; font-weight:600;
+    cursor:pointer; padding:0 16px;
+  }
+  body[data-lang="lo"] .btn{font-weight:400}
+  .btn.secondary{border-color:var(--n900); background:#fff; color:var(--n900)}
+  .btn:disabled{opacity:.42; cursor:default}
+  .btn.sm{min-height:44px; font-size:12.5px; font-weight:400; width:auto; padding:0 15px}
+
+  .seg{display:flex; border:1px solid var(--divider); border-radius:4px; overflow:hidden}
+  .seg button{
+    flex:1; border:0; background:#fff; cursor:pointer; font:inherit; font-size:12px;
+    min-height:36px; color:var(--n700); padding:0 6px;
+  }
+  .seg button + button{border-left:1px solid var(--divider)}
+  .seg button[aria-pressed="true"]{background:var(--a100); color:var(--a800)}
+
+  .statrow{display:flex; border:1px solid var(--divider); border-radius:4px; overflow:hidden}
+  .statrow > div{flex:1; padding:14px 4px; text-align:center}
+  .statrow > div + div{border-left:1px solid var(--divider)}
+  .statrow .v{font-size:28px; font-family:var(--serif); font-variant-numeric:tabular-nums}
+  .statrow .l{font-size:10.5px; color:var(--n700); margin-top:5px}
+
+  .list > div{padding:12px 16px; border-top:1px solid var(--divider)}
+  .list > div:first-child{border-top:0}
+  .list .primary{font-size:13px}
+  .list .sub{font-size:11px; color:var(--n700); margin-top:2px}
+
+  .big{font-family:var(--serif); font-variant-numeric:tabular-nums}
+  .num{font-variant-numeric:tabular-nums}
+
+  .field{margin-bottom:14px}
+  .field label{
+    display:block; font-size:11px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--n700); margin-bottom:6px;
+  }
+  .field input{
+    width:100%; min-height:48px; border:1px solid var(--divider); border-radius:4px;
+    padding:0 12px; font:inherit; font-size:14px; color:var(--text); background:#fff;
+  }
+
+  .toast{
+    position:absolute; left:16px; right:16px; bottom:74px;
+    background:var(--n900); color:#fff; border-radius:4px; padding:13px 15px; font-size:12.5px;
+    box-shadow:0 3px 10px rgba(45,43,43,.3); opacity:0; transform:translateY(6px);
+    transition:opacity .2s, transform .2s; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:none}
+
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block; flex:none}
+  .dot.g{background:var(--ok)} .dot.y{background:var(--accent)} .dot.r{background:var(--danger)}
+
+  .bar{height:6px; background:var(--n200); border-radius:99px; overflow:hidden; margin:10px 0}
+  .bar > i{display:block; height:100%; background:var(--accent)}
+
+  .ticks{display:flex; gap:5px}
+  .ticks > i{flex:1; height:5px; border-radius:99px; background:var(--n200)}
+  .ticks > i.f1{background:var(--a300)} .ticks > i.f2{background:var(--accent)}
+
+  /* login */
+  .login{padding:24px 24px 30px; display:flex; flex-direction:column; height:100%; overflow-y:auto}
+  .login .lead{font-size:34px; margin:26px 0 30px; line-height:1.1}
+  .demo{margin-top:20px}
+  .demo .who{
+    width:100%; text-align:left; border:1px solid var(--divider); background:#fff; cursor:pointer;
+    border-radius:4px; padding:11px 13px; font:inherit; margin-top:8px; display:flex;
+    justify-content:space-between; align-items:center;
+  }
+  .demo .who small{color:var(--n600); font-size:11px}
+  .hint{font-size:11px; color:var(--n600); text-align:center; margin-top:20px; line-height:1.6}
+
+  @media (max-width:430px){
+    body{padding:12px 0 40px}
+    .phone{width:100%; height:88vh; border-radius:0; border-left:0; border-right:0}
+    .toolbar{padding:0 14px}
+  }
+</style>
+</head>
+<body data-lang="en">
+
+<div class="toolbar">
+  <h1>Family Studio — Attendance / Leave / Payroll</h1>
+  <p>Standalone UI prototype with mock data. No server, no GPS. Interactive: check in/out, switch language, approve requests, open payslips.</p>
+  <div class="row" role group aria-label="View as role">
+    <span style="font-size:11.5px;color:var(--n600);align-self:center">View as:</span>
+    <button class="chip" data-role="EMPLOYEE" aria-pressed="true">Employee</button>
+    <button class="chip" data-role="MANAGER" aria-pressed="false">Manager</button>
+    <button class="chip" data-role="HR" aria-pressed="false">HR / Admin</button>
+    <button class="chip" data-role="reset" aria-pressed="false">↺ Sign out</button>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="statusbar">
+    <span id="clock">9:41</span>
+    <span class="dots">••• ▾ ▮</span>
+  </div>
+  <div class="app" id="app"><!-- rendered by JS --></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ────────────────────────────────────────────────────────────────
+     i18n — subset of mobile/src/i18n/strings.ts
+  ──────────────────────────────────────────────────────────────── */
+  var S = {
+    en:{
+      appName:"Family Studio", login:"Sign in", email:"Email", password:"Password", loginCta:"Sign in",
+      roleEmp:"Employee", roleMgr:"Manager", roleHr:"HR / Admin", roleAdmin:"Admin",
+      tabAtt:"Attendance", tabLeave:"Leave", tabPay:"Payroll", tabMe:"Profile",
+      tabTeam:"Team", tabAppr:"Approvals", tabRun:"Payroll run", tabPeople:"People",
+      locCheck:"Location check", metresFrom:"metres from the studio", inside:"Inside radius", outside:"Outside radius",
+      gpsNote:"Location is read from your device GPS. Check-in is recorded with the distance.",
+      checkIn:"Check in", checkOut:"Check out", tooFarIn:"Move closer to check in",
+      workingSince:"Working since", dayRecorded:"Day recorded", worked:"worked",
+      today:"Today", inShort:"IN", outShort:"OUT", hours:"HOURS",
+      shiftNote:"Shift 09:00 – 18:00 · lunch 12:00 – 13:30 · late after 09:30 · Mon to Fri",
+      thisMonth:"This month", present:"Present", late:"Late", onLeave:"On leave", recentDays:"Recent days",
+      punctuality:"Punctuality this month", lateDays:"late days",
+      punctClear:"On time", punctClearNote:"A warning letter is issued at the third late day. Late means after 09:30.",
+      lateBreakdown:"Late days and deductions", noDeduct:"warning only",
+      lateRule:"The first three late days of the month carry a warning letter only. From the fourth, each started hour after 09:30 is deducted at 10,000 LAK.",
+      balance:"Balance", holidays:"Holidays", requests:"Requests", applyLeave:"Apply for leave",
+      annual:"Annual leave", sick:"Sick leave", personal:"Personal leave",
+      annualNote:"Labour Law minimum 15 days", sickNote:"Paid with a certificate", personalNote:"Studio policy, 5 days a year",
+      used:"used", left:"left", nextHoliday:"Next public holiday", holidays2026:"Official holidays 2026",
+      holidayNote:"Holidays follow the annual notice of the Ministry of Labour and Social Welfare. Leave requests never consume a public holiday or a weekend.",
+      pending:"Pending", approved:"Approved", rejected:"Rejected", workingDays:"working days", workingDay:"working day", noReason:"No reason given",
+      netPay:"Net pay", viewPayslip:"View payslip", earlierPayslips:"Earlier payslips", allPayslips:"All payslips",
+      payslip:"Payslip", basic:"Basic salary", ot:"Overtime", allow:"Position allowance", gross:"Gross pay",
+      sso:"Social security 5.5%", tax:"Income tax", paid:"Paid", periodOpen:"Open period",
+      payNote:"Social security is withheld at 5.5% of the contributory wage. Income tax uses the progressive monthly bands.",
+      rollToday:"Roll call", notInYet:"Not in yet",
+      approve:"Approve", reject:"Reject", allClear:"Nothing to approve",
+      allClearNote:"New leave requests appear here as soon as they are sent.",
+      leaveApprovals:"Leave", attendanceCorrections:"Attendance corrections", noCorrections:"No correction requests",
+      approvedToast:"Approved", rejectedToast:"Rejected", runApprovedToast:"Payroll run approved",
+      headcount:"Headcount", ssoTotal:"Social security", taxTotal:"Income tax", approveRun:"Approve the payroll run",
+      periodOpenLabel:"Open period", directory:"Directory", punctualityKpi:"Punctuality",
+      lateThisMonth:"Late this month", noLateThisMonth:"No late arrivals this month", times:"times",
+      kpiLegend:"Green = on time · Yellow = 1–3 late (warning letter) · Red = 4+ late (deduction applies)",
+      personalInfo:"Personal information", phone:"Phone", address:"Address", dateOfBirth:"Date of birth",
+      startDate:"Date of first employment", nationalId:"ID / passport no.", bankAccount:"Bank account no.",
+      workplace:"Registered workplace", language:"Language", signOut:"Sign out",
+      hrOnlyNote:"Job title, role, salary and start date are set by HR.",
+      checkedInAt:"Checked in at", checkedOutAt:"Checked out at",
+      perPerson:"Per person", total:"Total"
+    },
+    lo:{
+      appName:"Family Studio", login:"ເຂົ້າສູ່ລະບົບ", email:"ອີເມວ", password:"ລະຫັດຜ່ານ", loginCta:"ເຂົ້າສູ່ລະບົບ",
+      roleEmp:"ພະນັກງານ", roleMgr:"ຫົວໜ້າ", roleHr:"ບຸຄະລາກອນ", roleAdmin:"ຜູ້ຄຸ້ມຄອງ",
+      tabAtt:"ເຂົ້າວຽກ", tabLeave:"ລາພັກ", tabPay:"ເງິນເດືອນ", tabMe:"ຂ້ອຍ",
+      tabTeam:"ທີມ", tabAppr:"ອະນຸມັດ", tabRun:"ຈ່າຍເງິນເດືອນ", tabPeople:"ພະນັກງານ",
+      locCheck:"ກວດສອບສະຖານທີ່", metresFrom:"ແມັດ ຈາກສະຕູດິໂອ", inside:"ຢູ່ໃນເຂດ", outside:"ຢູ່ນອກເຂດ",
+      gpsNote:"ອ່ານຕຳແໜ່ງຈາກ GPS ຂອງໂທລະສັບ. ການເຂົ້າວຽກຈະບັນທຶກໄລຍະທາງໄວ້ນຳ.",
+      checkIn:"ເຂົ້າວຽກ", checkOut:"ອອກວຽກ", tooFarIn:"ເຂົ້າໃກ້ຂຶ້ນເພື່ອລົງເວລາເຂົ້າ",
+      workingSince:"ເລີ່ມວຽກແຕ່", dayRecorded:"ບັນທຶກແລ້ວ", worked:"ເຮັດວຽກ",
+      today:"ວັນນີ້", inShort:"ເຂົ້າ", outShort:"ອອກ", hours:"ຊົ່ວໂມງ",
+      shiftNote:"ເວລາວຽກ 09:00 – 18:00 · ພັກທ່ຽງ 12:00 – 13:30 · ຊ້າຫຼັງ 09:30 · ຈັນ ຫາ ສຸກ",
+      thisMonth:"ເດືອນນີ້", present:"ມາວຽກ", late:"ມາຊ້າ", onLeave:"ລາພັກ", recentDays:"ວັນຜ່ານມາ",
+      punctuality:"ການມາວຽກຕົງເວລາເດືອນນີ້", lateDays:"ຄັ້ງທີ່ມາຊ້າ",
+      punctClear:"ມາຕົງເວລາ", punctClearNote:"ໃບຕັກເຕືອນຈະອອກເມື່ອມາຊ້າຄັ້ງທີ 3. ມາຊ້າ ໝາຍເຖິງ ຫຼັງ 09:30.",
+      lateBreakdown:"ວັນມາຊ້າ ແລະ ການຫັກເງິນ", noDeduct:"ໃບຕັກເຕືອນ",
+      lateRule:"ມາຊ້າ 3 ຄັ້ງແຮກຂອງເດືອນ ໄດ້ຮັບພຽງໃບຕັກເຕືອນ. ຈາກຄັ້ງທີ 4 ໄປ, ຫັກ 10,000 ກີບ ຕໍ່ຊົ່ວໂມງທີ່ເລີ່ມ ນັບຈາກ 09:30.",
+      balance:"ວັນລາຄົງເຫຼືອ", holidays:"ວັນພັກ", requests:"ຄຳຂໍ", applyLeave:"ຂໍລາພັກ",
+      annual:"ລາພັກປະຈຳປີ", sick:"ລາປ່ວຍ", personal:"ລາກິດສ່ວນຕົວ",
+      annualNote:"ກົດໝາຍແຮງງານ ຂັ້ນຕ່ຳ 15 ວັນ", sickNote:"ຈ່າຍເງິນເມື່ອມີໃບຢັ້ງຢືນແພດ", personalNote:"ນະໂຍບາຍຂອງສະຕູດິໂອ 5 ວັນຕໍ່ປີ",
+      used:"ໃຊ້ແລ້ວ", left:"ຄົງເຫຼືອ", nextHoliday:"ວັນພັກຕໍ່ໄປ", holidays2026:"ວັນພັກລັດຖະການ 2026",
+      holidayNote:"ວັນພັກອ້າງອີງຕາມແຈ້ງການປະຈຳປີຂອງກະຊວງແຮງງານ ແລະ ສະຫວັດດີການສັງຄົມ. ການລາພັກຈະບໍ່ຫັກວັນພັກລັດຖະການ ຫຼື ວັນເສົາ-ອາທິດ.",
+      pending:"ລໍຖ້າອະນຸມັດ", approved:"ອະນຸມັດແລ້ວ", rejected:"ບໍ່ອະນຸມັດ", workingDays:"ວັນເຮັດວຽກ", workingDay:"ວັນເຮັດວຽກ", noReason:"ບໍ່ໄດ້ລະບຸເຫດຜົນ",
+      netPay:"ເງິນສຸດທິ", viewPayslip:"ເບິ່ງໃບເງິນເດືອນ", earlierPayslips:"ໃບເງິນເດືອນກ່ອນໜ້າ", allPayslips:"ໃບເງິນເດືອນທັງໝົດ",
+      payslip:"ໃບເງິນເດືອນ", basic:"ເງິນເດືອນພື້ນຖານ", ot:"ເງິນເຮັດວຽກນອກເວລາ", allow:"ເງິນອຸດໜູນຕຳແໜ່ງ", gross:"ເງິນລວມ",
+      sso:"ປະກັນສັງຄົມ 5.5%", tax:"ອາກອນລາຍໄດ້", paid:"ຈ່າຍວັນທີ", periodOpen:"ງວດທີ່ເປີດຢູ່",
+      payNote:"ຫັກປະກັນສັງຄົມ 5.5% ຂອງເງິນເດືອນທີ່ຄິດໄລ່. ອາກອນລາຍໄດ້ຄິດໄລ່ຕາມອັດຕາກ້າວໜ້າລາຍເດືອນ.",
+      rollToday:"ລາຍຊື່ວັນນີ້", notInYet:"ຍັງບໍ່ທັນເຂົ້າ",
+      approve:"ອະນຸມັດ", reject:"ບໍ່ອະນຸມັດ", allClear:"ບໍ່ມີລາຍການລໍຖ້າ",
+      allClearNote:"ຄຳຂໍລາພັກໃໝ່ຈະປາກົດຢູ່ນີ້ທັນທີ.",
+      leaveApprovals:"ການລາ", attendanceCorrections:"ການແກ້ໄຂການລົງເວລາ", noCorrections:"ບໍ່ມີຄຳຂໍແກ້ໄຂ",
+      approvedToast:"ອະນຸມັດແລ້ວ", rejectedToast:"ບໍ່ອະນຸມັດ", runApprovedToast:"ອະນຸມັດແລ້ວ",
+      headcount:"ຈຳນວນພະນັກງານ", ssoTotal:"ປະກັນສັງຄົມ", taxTotal:"ອາກອນລາຍໄດ້", approveRun:"ອະນຸມັດການຈ່າຍເງິນເດືອນ",
+      periodOpenLabel:"ງວດທີ່ເປີດຢູ່", directory:"ລາຍຊື່", punctualityKpi:"ການຕົງເວລາ",
+      lateThisMonth:"ມາຊ້າເດືອນນີ້", noLateThisMonth:"ບໍ່ມີການມາຊ້າໃນເດືອນນີ້", times:"ຄັ້ງ",
+      kpiLegend:"ຂຽວ = ຕົງເວລາ · ເຫຼືອງ = ມາຊ້າ 1–3 ຄັ້ງ (ໃບຕັກເຕືອນ) · ແດງ = ມາຊ້າ 4 ຄັ້ງຂຶ້ນໄປ (ຫັກເງິນ)",
+      personalInfo:"ຂໍ້ມູນສ່ວນຕົວ", phone:"ເບີໂທ", address:"ທີ່ຢູ່", dateOfBirth:"ວັນເດືອນປີເກີດ",
+      startDate:"ວັນທີ່ເລີ່ມເຮັດວຽກ", nationalId:"ເລກບັດປະຈຳຕົວ / ໜັງສືຜ່ານແດນ", bankAccount:"ເລກບັນຊີທະນາຄານ",
+      workplace:"ສະຖານທີ່ເຮັດວຽກ", language:"ພາສາ", signOut:"ອອກຈາກລະບົບ",
+      hrOnlyNote:"ຕຳແໜ່ງ, ສິດ, ເງິນເດືອນ ແລະ ວັນເລີ່ມວຽກ ແມ່ນຝ່າຍບຸຄະລາກອນເປັນຜູ້ກຳນົດ.",
+      checkedInAt:"ລົງເວລາເຂົ້າ", checkedOutAt:"ລົງເວລາອອກ",
+      perPerson:"ລາຍບຸກຄົນ", total:"ລວມ"
+    }
+  };
+
+  /* ────────────────────────────────────────────────────────────────
+     Mock data — from server/prisma/seed.ts
+  ──────────────────────────────────────────────────────────────── */
+  var OFFICE = { name:"Family Studio", addressEn:"Ban Phonthan, Saysettha, Vientiane",
+    addressLo:"ບ້ານໂພນທັນ, ເມືອງໄຊເສດຖາ, ນະຄອນຫຼວງວຽງຈັນ", radiusM:10 };
+
+  var STAFF = [
+    { code:"0142", role:"MANAGER", initials:"SK", nameEn:"Somchai Keomany", nameLo:"ສົມໄຊ ແກ້ວມະນີ",
+      titleEn:"Studio manager", titleLo:"ຜູ້ຈັດການສະຕູດິໂອ", basic:4500000, ot:320000, allow:500000,
+      phone:"020 5511 2233", addr:"Ban Nongbone, Saysettha, Vientiane", dob:"1988-02-17", start:"2019-03-01",
+      nid:"1-88-0217-00042", bank:"BCEL 040-12-00-01234567-001", late:0, todayIn:"08:52" },
+    { code:"0201", role:"EMPLOYEE", initials:"PV", nameEn:"Phetsamone Vilay", nameLo:"ເພັດສະໝອນ ວິໄລ",
+      titleEn:"Photographer", titleLo:"ຊ່າງພາບ", basic:3800000, ot:240000, allow:300000,
+      phone:"020 7722 8899", addr:"Ban Phonsavanh, Sisattanak, Vientiane", dob:"1994-09-05", start:"2021-06-14",
+      nid:"1-94-0905-00318", bank:"BCEL 040-12-00-07654321-001", late:2, todayIn:null },
+    { code:"0202", role:"EMPLOYEE", initials:"NC", nameEn:"Noy Chanthavong", nameLo:"ນ້ອຍ ຈັນທະວົງ",
+      titleEn:"Retoucher", titleLo:"ຊ່າງແກ້ໄຂພາບ", basic:3200000, ot:160000, allow:200000,
+      phone:"020 9933 4455", addr:"Ban Dongpalane, Sisattanak, Vientiane", dob:"1996-11-22", start:"2022-01-10",
+      nid:"1-96-1122-00577", bank:"JDB 010-20-00-00223344-002", late:0, todayIn:"09:05" },
+    { code:"0203", role:"EMPLOYEE", initials:"KS", nameEn:"Khamla Sisouk", nameLo:"ຄຳລ້າ ສີສຸກ",
+      titleEn:"Front desk", titleLo:"ພະນັກງານຕ້ອນຮັບ", basic:2600000, ot:80000, allow:150000,
+      phone:"020 2244 6677", addr:"Ban Thatluang, Xaysettha, Vientiane", dob:"1999-04-30", start:"2023-02-20",
+      nid:"1-99-0430-00812", bank:"BCEL 040-12-00-09112233-001", late:1, todayIn:"09:51" },
+    { code:"0204", role:"EMPLOYEE", initials:"TL", nameEn:"Thongdy Latsamy", nameLo:"ທອງດີ ລັດສະໝີ",
+      titleEn:"Assistant", titleLo:"ຜູ້ຊ່ວຍ", basic:2400000, ot:120000, allow:100000,
+      phone:"020 5566 7788", addr:"Ban Sokpaluang, Sisattanak, Vientiane", dob:"2000-07-08", start:"2024-05-06",
+      nid:"1-00-0708-01099", bank:"JDB 010-20-00-00445566-002", late:0, todayIn:null },
+    { code:"0147", role:"HR", initials:"MV", nameEn:"Manivone Douangdy", nameLo:"ມະນີວອນ ດວງດີ",
+      titleEn:"Accounts", titleLo:"ບັນຊີ", basic:3000000, ot:0, allow:250000,
+      phone:"020 7788 1122", addr:"Ban Haysok, Chanthabouly, Vientiane", dob:"1990-12-01", start:"2020-08-17",
+      nid:"1-90-1201-00203", bank:"BCEL 040-12-00-05566778-001", late:0, todayIn:"08:47" }
+  ];
+  var byCode = {}; STAFF.forEach(function(s){ byCode[s.code] = s; });
+
+  var HOLIDAYS = [
+    { dateISO:"2026-01-01", en:"International New Year's Day", lo:"ວັນປີໃໝ່ສາກົນ", noteEn:"Thursday", noteLo:"ວັນພະຫັດ", days:1 },
+    { dateISO:"2026-03-08", en:"International Women's Day", lo:"ວັນແມ່ຍິງສາກົນ", noteEn:"Sunday · women employees", noteLo:"ວັນອາທິດ · ພະນັກງານຍິງ", days:1 },
+    { dateISO:"2026-04-14", en:"Lao New Year (Pi Mai Lao)", lo:"ບຸນປີໃໝ່ລາວ", noteEn:"Tuesday to Thursday", noteLo:"ວັນອັງຄານ ຫາ ວັນພະຫັດ", days:3 },
+    { dateISO:"2026-05-01", en:"International Labour Day", lo:"ວັນກຳມະກອນສາກົນ", noteEn:"Friday", noteLo:"ວັນສຸກ", days:1 },
+    { dateISO:"2026-12-02", en:"Lao National Day", lo:"ວັນຊາດລາວ", noteEn:"Wednesday", noteLo:"ວັນພຸດ", days:1 }
+  ];
+
+  // Leave requests for Phetsamone (the primary employee login)
+  var MY_LEAVE = [
+    { type:"ANNUAL", from:"2026-07-13", to:"2026-07-14", wd:2, reason:"Family trip to Luang Prabang", status:"APPROVED" },
+    { type:"ANNUAL", from:"2026-03-02", to:"2026-03-05", wd:4, reason:"Home village visit", status:"APPROVED" },
+    { type:"SICK",   from:"2026-06-02", to:"2026-06-02", wd:1, reason:"Clinic certificate attached", status:"APPROVED" },
+    { type:"PERSONAL",from:"2026-04-20", to:"2026-04-20", wd:1, reason:"Overlapped with a wedding shoot", status:"REJECTED" }
+  ];
+
+  // Pending queue for the manager
+  var PENDING_LEAVE = [
+    { id:"L1", code:"0203", type:"ANNUAL", from:"2026-09-28", to:"2026-09-30", wd:3, reason:"Sister's wedding in Pakse" },
+    { id:"L2", code:"0202", type:"SICK",   from:"2026-09-09", to:"2026-09-09", wd:1, reason:"Dentist appointment" }
+  ];
+
+  // Attendance history for Phetsamone, 1–7 Sep 2026
+  var HISTORY = [
+    { dateISO:"2026-09-07", inT:"08:56", outT:"18:04", late:0 },
+    { dateISO:"2026-09-04", inT:"09:42", outT:"18:02", late:12 },
+    { dateISO:"2026-09-03", inT:"08:58", outT:"18:00", late:0 },
+    { dateISO:"2026-09-02", inT:"09:47", outT:"18:06", late:17 },
+    { dateISO:"2026-09-01", inT:"08:55", outT:"18:02", late:0 }
+  ];
+
+  var PERIOD = "2026-09";
+  var PAID_PERIODS = ["2026-08","2026-07","2026-06"];
+
+  /* ── payroll math (server/src/lib/payroll.ts) ─────────────────── */
+  function computeTax(gross){
+    var t = 0;
+    if (gross > 1300000) t += Math.round((Math.min(gross,5000000) - 1300000) * 0.05);
+    if (gross > 5000000) t += Math.round((Math.min(gross,15000000) - 5000000) * 0.10);
+    return t;
+  }
+  function computePay(s){
+    var gross = s.basic + s.ot + s.allow;
+    var sso = Math.round(gross * 0.055);
+    var tax = computeTax(gross);
+    return { basic:s.basic, ot:s.ot, allow:s.allow, gross:gross, sso:sso, tax:tax, net: gross - sso - tax };
+  }
+
+  /* ── formatting helpers ──────────────────────────────────────── */
+  function lak(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  var MONTHS = {
+    en:["January","February","March","April","May","June","July","August","September","October","November","December"],
+    lo:["ມັງກອນ","ກຸມພາ","ມີນາ","ເມສາ","ພຶດສະພາ","ມິຖຸນາ","ກໍລະກົດ","ສິງຫາ","ກັນຍາ","ຕຸລາ","ພະຈິກ","ທັນວາ"]
+  };
+  var WKD = {
+    en:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
+    lo:["ອາທິດ","ຈັນ","ອັງຄານ","ພຸດ","ພະຫັດ","ສຸກ","ເສົາ"]
+  };
+  function periodLabel(iso, lang){ var p = iso.split("-"); return MONTHS[lang][+p[1]-1] + " " + p[0]; }
+  function dOfISO(iso){ var p = iso.split("-").map(Number); return new Date(p[0], p[1]-1, p[2]); }
+  function wkShort(iso, lang){ var d = dOfISO(iso); return WKD[lang][d.getDay()] + " " + d.getDate() + " " + MONTHS[lang][d.getMonth()].slice(0,3); }
+  function rangeLabel(a, b, lang){
+    var da = dOfISO(a), db = dOfISO(b);
+    if (a === b) return da.getDate() + " " + MONTHS[lang][da.getMonth()].slice(0,3) + " " + da.getFullYear();
+    return da.getDate() + " – " + db.getDate() + " " + MONTHS[lang][db.getMonth()].slice(0,3) + " " + db.getFullYear();
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     App state
+  ──────────────────────────────────────────────────────────────── */
+  var st = {
+    lang: "en",
+    user: null,          // STAFF entry once signed in
+    tab: null,
+    // attendance interactive state for the signed-in employee
+    att: { status:"out", inAt:null, outAt:null },  // out | in | done
+    leaveTab: "balance",
+    apprTab: "leave",
+    payslipOpen: null,   // period iso or null
+    pending: PENDING_LEAVE.slice(),
+    runApproved: false
+  };
+  var elApp = document.getElementById("app");
+  var elToast = document.getElementById("toast");
+  var toastTimer = null;
+
+  function t(k){ return (S[st.lang] && S[st.lang][k]) || (S.en[k]) || k; }
+  function nm(s){ return st.lang === "lo" ? s.nameLo : s.nameEn; }
+  function title(s){ return st.lang === "lo" ? s.titleLo : s.titleEn; }
+  function roleLabel(r){ return r==="MANAGER"?t("roleMgr"):r==="HR"?t("roleHr"):r==="ADMIN"?t("roleAdmin"):t("roleEmp"); }
+
+  function flash(msg){
+    elToast.textContent = msg;
+    elToast.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ elToast.classList.remove("show"); }, 2600);
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function nowHM(){
+    var d = new Date();
+    return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Tab sets per role
+  ──────────────────────────────────────────────────────────────── */
+  var TABSETS = {
+    EMPLOYEE: ["ATT","LEAVE","PAY","ME"],
+    MANAGER:  ["TEAM","APPR","LEAVE","ME"],
+    HR:       ["RUN","LEAVE","PEOPLE","ME"]
+  };
+  var TABMETA = {
+    ATT:   { key:"tabAtt",    icon:"clock" },
+    LEAVE: { key:"tabLeave",  icon:"cal"   },
+    PAY:   { key:"tabPay",    icon:"cash"  },
+    ME:    { key:"tabMe",     icon:"user"  },
+    TEAM:  { key:"tabTeam",   icon:"users" },
+    APPR:  { key:"tabAppr",   icon:"check" },
+    RUN:   { key:"tabRun",    icon:"cash"  },
+    PEOPLE:{ key:"tabPeople", icon:"users" }
+  };
+  function ICON(name){
+    var p = {
+      clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      cal:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+      cash:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+      user:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-4 12.5-4 14 0"/>',
+      users:'<circle cx="9" cy="8" r="3"/><path d="M2.5 19c1-3.5 9-3.5 10 0M15.5 6.5a3 3 0 0 1 0 5.5M15 15c3 .4 5.5 1.8 6 4"/>',
+      check:'<path d="M4 12.5l5 5 11-11"/>'
+    };
+    return '<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(p[name]||"")+'</svg>';
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Render — login
+  ──────────────────────────────────────────────────────────────── */
+  function renderLogin(){
+    var demos = [
+      { s: byCode["0201"], note: t("roleEmp") },
+      { s: byCode["0142"], note: t("roleMgr") },
+      { s: byCode["0147"], note: t("roleHr") }
+    ];
+    elApp.innerHTML =
+      '<div class="login">' +
+        '<div style="align-self:flex-end">' +
+          langSwitch() +
+        '</div>' +
+        '<div>' +
+          '<div class="kicker">' + esc(t("appName")) + ' · attendance, leave, payroll</div>' +
+          '<div class="lead">' + esc(t("login")) + '</div>' +
+        '</div>' +
+        '<div class="field"><label>' + esc(t("email")) + '</label><input id="li-email" type="email" autocomplete="off" placeholder="name@familystudio.la"></div>' +
+        '<div class="field"><label>' + esc(t("password")) + '</label><input id="li-pass" type="password" value="familystudio"></div>' +
+        '<button class="btn" id="li-go">' + esc(t("loginCta")) + '</button>' +
+        '<div class="demo">' +
+          '<div class="kicker">Demo accounts</div>' +
+          demos.map(function(d,i){
+            return '<button class="who" data-demo="' + d.s.code + '"><span>' + esc(nm(d.s)) +
+              '<br><small>' + esc(d.s.nameEn === nm(d.s) ? d.s.titleEn : d.s.nameEn) + '</small></span>' +
+              '<span class="tag">' + esc(d.note) + '</span></button>';
+          }).join("") +
+        '</div>' +
+        '<div class="hint">Password is <b>familystudio</b> for every account.<br>Any email + password also works in this prototype.</div>' +
+      '</div>';
+
+    elApp.querySelector("#li-go").addEventListener("click", function(){
+      var email = (elApp.querySelector("#li-email").value || "").trim().toLowerCase();
+      var found = STAFF.filter(function(s){ return s.nameEn.toLowerCase().split(" ")[0] + "@familystudio.la" === email; })[0];
+      signIn(found || byCode["0201"]);
+    });
+    elApp.querySelectorAll("[data-demo]").forEach(function(b){
+      b.addEventListener("click", function(){ signIn(byCode[b.getAttribute("data-demo")]); });
+    });
+    bindLangSwitch();
+  }
+
+  function signIn(s){
+    st.user = s;
+    st.tab = TABSETS[s.role][0];
+    st.att = { status:"out", inAt:null, outAt:null };
+    st.payslipOpen = null;
+    st.pending = PENDING_LEAVE.slice();
+    st.runApproved = false;
+    syncRoleChips();
+    render();
+  }
+  function signOut(){ st.user = null; render(); }
+
+  /* ────────────────────────────────────────────────────────────────
+     Render — shell (header + body + tabs)
+  ──────────────────────────────────────────────────────────────── */
+  function langSwitch(){
+    return '<div class="lang">' +
+      '<button data-lang="en" aria-pressed="' + (st.lang==="en") + '">EN</button>' +
+      '<button data-lang="lo" aria-pressed="' + (st.lang==="lo") + '">ລາວ</button>' +
+    '</div>';
+  }
+  function bindLangSwitch(){
+    elApp.querySelectorAll(".lang button").forEach(function(b){
+      b.addEventListener("click", function(){
+        st.lang = b.getAttribute("data-lang");
+        document.body.setAttribute("data-lang", st.lang);
+        render();
+      });
+    });
+  }
+
+  function screenTitle(){
+    var m = { ATT:"tabAtt", LEAVE:"tabLeave", PAY:"tabPay", ME:"tabMe",
+      TEAM:"tabTeam", APPR:"tabAppr", RUN:"tabRun", PEOPLE:"tabPeople" };
+    return t(m[st.tab] || "tabAtt");
+  }
+
+  function render(){
+    document.body.setAttribute("data-lang", st.lang);
+    if (!st.user){ renderLogin(); return; }
+
+    var bodyHTML = "";
+    switch(st.tab){
+      case "ATT":    bodyHTML = viewAttendance(); break;
+      case "LEAVE":  bodyHTML = viewLeave(); break;
+      case "PAY":    bodyHTML = viewPayroll(); break;
+      case "ME":     bodyHTML = viewProfile(); break;
+      case "TEAM":   bodyHTML = viewTeam(); break;
+      case "APPR":   bodyHTML = viewApprovals(); break;
+      case "RUN":    bodyHTML = viewRun(); break;
+      case "PEOPLE": bodyHTML = viewPeople(); break;
+    }
+
+    var tabs = TABSETS[st.user.role].map(function(key){
+      var m = TABMETA[key];
+      return '<button data-tab="' + key + '" aria-pressed="' + (st.tab===key) + '">' +
+        ICON(m.icon) + '<span class="tl">' + esc(t(m.key)) + '</span></button>';
+    }).join("");
+
+    elApp.innerHTML =
+      '<div class="hdr">' +
+        '<div style="flex-shrink:1">' +
+          '<div class="kicker">' + esc(roleLabel(st.user.role)) + '</div>' +
+          '<div class="title">' + esc(screenTitle()) + '</div>' +
+        '</div>' +
+        '<div class="hdr-right">' + langSwitch() +
+          '<div class="avatar">' + esc(st.user.initials) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="body" id="scr">' + bodyHTML + '</div>' +
+      '<div class="tabs">' + tabs + '</div>';
+
+    bindLangSwitch();
+    elApp.querySelectorAll(".tabs button").forEach(function(b){
+      b.addEventListener("click", function(){
+        st.tab = b.getAttribute("data-tab");
+        st.payslipOpen = null;
+        render();
+      });
+    });
+    if (bodyBind[st.tab]) bodyBind[st.tab]();
+  }
+
+  var bodyBind = {};
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — Attendance
+  ──────────────────────────────────────────────────────────────── */
+  function viewAttendance(){
+    var distance = 6;                       // metres — inside the 10 m geofence
+    var inside = distance <= OFFICE.radiusM;
+    var s = st.att;
+
+    var actionBlock;
+    if (s.status === "out"){
+      actionBlock = '<button class="btn" id="a-in">' + esc(t("checkIn")) + '</button>';
+    } else if (s.status === "in"){
+      actionBlock =
+        '<div style="display:flex;flex-direction:column;gap:12px">' +
+          '<div class="row" style="border:1px solid var(--a200);background:var(--a100);border-radius:4px;padding:13px">' +
+            '<span style="font-size:12px;color:var(--a800)">' + esc(t("workingSince")) + ' ' + esc(s.inAt) + '</span>' +
+            '<span class="big" id="a-timer" style="font-size:19px;color:var(--a800)">00:00:0<span>0</span></span>' +
+          '</div>' +
+          '<button class="btn secondary" id="a-out">' + esc(t("checkOut")) + '</button>' +
+        '</div>';
+    } else {
+      actionBlock =
+        '<div class="row" style="justify-content:flex-start;gap:10px;border:1px solid var(--divider);border-radius:4px;padding:13px">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--a700)" stroke-width="2" stroke-linecap="round"><path d="M4 12.5l5 5 11-11"/></svg>' +
+          '<span style="font-size:12.5px">' + esc(t("dayRecorded")) + ' · 8h 5m ' + esc(t("worked")) + '</span>' +
+        '</div>';
+    }
+
+    var todayIn  = s.inAt || "––";
+    var todayOut = s.outAt || "––";
+    var todayHrs = s.status === "done" ? "8h 5m" : s.status === "in" ? "0h 0m" : "––";
+
+    var lateRows = HISTORY.filter(function(h){ return h.late > 0; }).map(function(h){
+      var arr = "09:" + String(30 + (h.late % 30)).padStart(2,"0");
+      return '<div class="row"><div>' +
+          '<div class="primary">' + esc(wkShort(h.dateISO, st.lang)) + '</div>' +
+          '<div class="sub num">' + esc(arr) + ' · +0h ' + h.late + 'm</div>' +
+        '</div><span class="big" style="font-size:13.5px;color:var(--n600)">' + esc(t("noDeduct")) + '</span></div>';
+    }).join("");
+
+    var histRows = HISTORY.map(function(h){
+      return '<div class="row"><div>' +
+        '<div class="primary">' + esc(wkShort(h.dateISO, st.lang)) + '</div>' +
+        '<div class="sub num">' + esc(h.inT) + ' – ' + esc(h.outT) + '</div>' +
+        '</div><span class="tag ' + (h.late>0?"accent":"") + '">' + esc(h.late>0?t("late"):t("present")) + '</span></div>';
+    }).join("");
+
+    return '' +
+      '<div class="card" style="display:flex;flex-direction:column;gap:15px">' +
+        '<div class="row"><span class="kicker">' + esc(t("locCheck")) + '</span>' +
+          '<span class="tag ' + (inside?"accent":"outline") + '">' + esc(inside?t("inside"):t("outside")) + '</span></div>' +
+        '<div>' +
+          '<div style="display:flex;align-items:baseline;gap:7px">' +
+            '<span class="big" style="font-size:46px;color:var(--a800)">' + distance + '</span>' +
+            '<span style="font-size:13px;color:var(--n700)">' + esc(t("metresFrom")) + '</span>' +
+          '</div>' +
+          '<div style="position:relative;height:34px;margin-top:14px">' +
+            '<div style="position:absolute;left:0;right:0;top:15px;height:3px;background:var(--n200);border-radius:99px"></div>' +
+            '<div style="position:absolute;left:0;width:25%;top:15px;height:3px;background:var(--accent);border-radius:99px"></div>' +
+            '<div style="position:absolute;left:' + (distance/40*100) + '%;top:8px;width:3px;height:17px;background:var(--n900);border-radius:2px;margin-left:-1.5px"></div>' +
+            '<span style="position:absolute;left:0;bottom:0;font-size:10px;color:var(--n600)">0 m</span>' +
+            '<span style="position:absolute;left:25%;bottom:0;font-size:10px;color:var(--a700);margin-left:-10px">10 m</span>' +
+            '<span style="position:absolute;right:0;bottom:0;font-size:10px;color:var(--n600)">40 m</span>' +
+          '</div>' +
+          '<div class="muted" style="margin-top:11px">' + esc(t("gpsNote")) + '</div>' +
+        '</div>' +
+        actionBlock +
+      '</div>' +
+
+      '<div class="card pad0 flush">' +
+        '<div style="padding:13px"><span class="kicker">' + esc(t("today")) + '</span></div>' +
+        '<div class="statrow" style="border:0;border-radius:0;border-top:1px solid var(--divider)">' +
+          '<div><div class="l">' + esc(t("inShort")) + '</div><div class="v" style="font-size:19px">' + esc(todayIn) + '</div></div>' +
+          '<div><div class="l">' + esc(t("outShort")) + '</div><div class="v" style="font-size:19px">' + esc(todayOut) + '</div></div>' +
+          '<div><div class="l">' + esc(t("hours")) + '</div><div class="v" style="font-size:19px">' + esc(todayHrs) + '</div></div>' +
+        '</div>' +
+        '<div style="padding:11px"><div class="muted">' + esc(t("shiftNote")) + '</div></div>' +
+      '</div>' +
+
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("thisMonth")) + '</div>' +
+        '<div class="statrow">' +
+          '<div><div class="v">5</div><div class="l">' + esc(t("present")) + '</div></div>' +
+          '<div><div class="v" style="color:var(--a700)">2</div><div class="l">' + esc(t("late")) + '</div></div>' +
+          '<div><div class="v">0</div><div class="l">' + esc(t("onLeave")) + '</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card pad0">' +
+        '<div style="padding:15px;display:flex;justify-content:space-between;gap:12px">' +
+          '<div style="flex-shrink:1">' +
+            '<div class="kicker" style="color:var(--n700)">' + esc(t("punctuality")) + '</div>' +
+            '<div class="big" style="font-size:17px;margin-top:5px">' + esc(t("punctClear")) + '</div>' +
+            '<div style="font-size:11.5px;margin-top:5px;color:var(--n700);line-height:1.4">' + esc(t("punctClearNote")) + '</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div class="big" style="font-size:34px">2</div>' +
+            '<div style="font-size:10px;color:var(--n700);margin-top:3px">' + esc(t("lateDays")) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ticks" style="padding:0 15px 14px">' +
+          Array.apply(null,{length:15}).map(function(_,i){
+            return '<i class="' + (i<2 ? "f1" : "") + '"></i>';
+          }).join("") +
+        '</div>' +
+      '</div>' +
+
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("lateBreakdown")) + '</div>' +
+        '<div class="card pad0 list">' + lateRows + '</div>' +
+        '<div class="muted" style="margin-top:9px">' + esc(t("lateRule")) + '</div>' +
+      '</div>' +
+
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("recentDays")) + '</div>' +
+        '<div class="card pad0 list">' + histRows + '</div>' +
+      '</div>';
+  }
+
+  bodyBind.ATT = function(){
+    var inBtn = document.getElementById("a-in");
+    if (inBtn) inBtn.addEventListener("click", function(){
+      st.att = { status:"in", inAt: nowHM(), outAt:null, startedMs: Date.now() };
+      render();
+      flash(t("checkedInAt") + " " + st.att.inAt);
+    });
+    var outBtn = document.getElementById("a-out");
+    if (outBtn) outBtn.addEventListener("click", function(){
+      st.att.status = "done"; st.att.outAt = nowHM();
+      render();
+      flash(t("checkedOutAt") + " " + st.att.outAt);
+    });
+    // live timer
+    if (st.att.status === "in"){
+      var elT = document.getElementById("a-timer");
+      if (elT){
+        var tick = function(){
+          if (st.att.status !== "in") return;
+          var el2 = document.getElementById("a-timer");
+          if (!el2) return;
+          var s = Math.floor((Date.now() - st.att.startedMs)/1000);
+          var hh = String(Math.floor(s/3600)).padStart(2,"0");
+          var mm = String(Math.floor(s%3600/60)).padStart(2,"0");
+          var ss = String(s%60).padStart(2,"0");
+          el2.textContent = hh + ":" + mm + ":" + ss;
+          setTimeout(tick, 1000);
+        };
+        setTimeout(tick, 1000);
+      }
+    }
+  };
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — Leave
+  ──────────────────────────────────────────────────────────────── */
+  function balances(){
+    return [
+      { type:"ANNUAL",   total:15, used:6, nameKey:"annual",   noteKey:"annualNote" },
+      { type:"SICK",     total:30, used:1, nameKey:"sick",     noteKey:"sickNote" },
+      { type:"PERSONAL", total:5,  used:0, nameKey:"personal", noteKey:"personalNote" }
+    ];
+  }
+  function viewLeave(){
+    var seg = '<div class="seg">' +
+      [["balance","balance"],["holidays","holidays"],["requests","requests"]].map(function(o){
+        return '<button data-lt="' + o[0] + '" aria-pressed="' + (st.leaveTab===o[0]) + '">' + esc(t(o[1])) + '</button>';
+      }).join("") + '</div>';
+
+    var content = "";
+    if (st.leaveTab === "balance"){
+      content = '<div style="display:flex;flex-direction:column;gap:14px">' +
+        balances().map(function(b){
+          var pct = Math.min(100, Math.round(b.used/b.total*100));
+          return '<div class="card">' +
+            '<div class="row baseline"><span class="h">' + esc(t(b.nameKey)) + '</span>' +
+              '<span style="font-size:11.5px;color:var(--n700)">' + b.used + ' of ' + b.total + ' ' + esc(t("used")) + '</span></div>' +
+            '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+            '<div class="row baseline"><span class="muted" style="flex-shrink:1">' + esc(t(b.noteKey)) + '</span>' +
+              '<span class="big" style="font-size:22px;color:var(--a800)">' + (b.total-b.used) + ' ' + esc(t("left")) + '</span></div>' +
+          '</div>';
+        }).join("") +
+        '<button class="btn">' + esc(t("applyLeave")) + '</button>' +
+      '</div>';
+    } else if (st.leaveTab === "holidays"){
+      var next = HOLIDAYS.filter(function(h){ return h.dateISO >= "2026-09-08"; })[0];
+      var nextCard = next ? '<div class="card accent">' +
+          '<div class="kicker">' + esc(t("nextHoliday")) + '</div>' +
+          '<div class="h" style="font-size:21px;margin-top:5px;color:var(--a900)">' + esc(st.lang==="lo"?next.lo:next.en) + '</div>' +
+          '<div style="font-size:12px;margin-top:4px;color:var(--a800)">' + esc(rangeLabel(next.dateISO,next.dateISO,st.lang)) + '</div>' +
+        '</div>' : "";
+      content = '<div style="display:flex;flex-direction:column;gap:14px">' + nextCard +
+        '<div class="card pad0">' +
+          '<div style="padding:12px 16px;border-bottom:1px solid var(--divider)"><span class="kicker">' + esc(t("holidays2026")) + '</span></div>' +
+          HOLIDAYS.map(function(h, i){
+            var d = dOfISO(h.dateISO);
+            var lbl = d.getDate() + " " + MONTHS[st.lang][d.getMonth()].slice(0,3);
+            var bb = i === HOLIDAYS.length - 1 ? "" : "border-bottom:1px solid var(--divider)";
+            return '<div style="display:flex;gap:13px;padding:13px 16px;' + bb + '">' +
+              '<span class="big" style="width:66px;font-size:13px;color:var(--a700)">' + esc(lbl) + '</span>' +
+              '<div style="flex:1"><div style="font-size:13px">' + esc(st.lang==="lo"?h.lo:h.en) + '</div>' +
+                '<div class="sub">' + esc(st.lang==="lo"?h.noteLo:h.noteEn) + '</div></div>' +
+              '<span class="muted" style="color:var(--n600)">' + (h.days===1?"1 day":h.days+" days") + '</span>' +
+            '</div>';
+          }).join("") +
+        '</div>' +
+        '<div class="muted">' + esc(t("holidayNote")) + '</div>' +
+      '</div>';
+    } else {
+      content = '<div style="display:flex;flex-direction:column;gap:12px">' +
+        MY_LEAVE.map(function(r){
+          var stkey = r.status==="APPROVED"?"approved":r.status==="REJECTED"?"rejected":"pending";
+          var variant = r.status==="APPROVED"?"accent":r.status==="REJECTED"?"":"outline";
+          var tkey = r.type==="ANNUAL"?"annual":r.type==="SICK"?"sick":"personal";
+          return '<div class="card">' +
+            '<div class="row"><span class="h">' + esc(t(tkey)) + '</span>' +
+              '<span class="tag ' + variant + '">' + esc(t(stkey)) + '</span></div>' +
+            '<div style="font-size:12px;margin-top:6px;color:var(--n800)">' + esc(rangeLabel(r.from,r.to,st.lang)) +
+              ' · ' + r.wd + ' ' + esc(r.wd===1?t("workingDay"):t("workingDays")) + '</div>' +
+            '<div class="muted" style="margin-top:4px">' + esc(r.reason || t("noReason")) + '</div>' +
+          '</div>';
+        }).join("") +
+        '<button class="btn">' + esc(t("applyLeave")) + '</button>' +
+      '</div>';
+    }
+    return seg + '<div style="height:2px"></div>' + content;
+  }
+  bodyBind.LEAVE = function(){
+    elApp.querySelectorAll("[data-lt]").forEach(function(b){
+      b.addEventListener("click", function(){ st.leaveTab = b.getAttribute("data-lt"); render(); });
+    });
+    elApp.querySelectorAll(".body .btn").forEach(function(b){
+      if (b.textContent.trim() === t("applyLeave"))
+        b.addEventListener("click", function(){ flash(st.lang==="lo" ? "ໜ້າຈໍຂໍລາພັກ (ຕົວຢ່າງ)" : "Apply-for-leave form (prototype)"); });
+    });
+  };
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — Payroll (employee)
+  ──────────────────────────────────────────────────────────────── */
+  function myPayslip(period){
+    var p = computePay(st.user);
+    return { period:period, basic:p.basic, ot:p.ot, allow:p.allow, gross:p.gross, sso:p.sso, tax:p.tax, net:p.net,
+      status: period===PERIOD ? "OPEN" : "PAID", paidAt: period===PERIOD ? null : period + "-29" };
+  }
+  function viewPayroll(){
+    if (st.payslipOpen) return payslipDetail(myPayslip(st.payslipOpen));
+    var all = [PERIOD].concat(PAID_PERIODS);
+    var latest = myPayslip(all[0]);
+    return '<div style="display:flex;flex-direction:column;gap:16px">' +
+      '<div class="card">' +
+        '<div class="kicker">' + esc(t("netPay")) + ' · ' + esc(periodLabel(latest.period, st.lang)) + '</div>' +
+        '<div style="display:flex;align-items:baseline;gap:7px;margin-top:8px">' +
+          '<span class="big" style="font-size:36px">' + lak(latest.net) + '</span><span style="font-size:14px;color:var(--n700)">LAK</span>' +
+        '</div>' +
+        '<div class="divider"></div>' +
+        '<div class="row"><span class="muted" style="flex-shrink:1">' + esc(t("periodOpen")) + '</span>' +
+          '<button class="btn sm" data-ps="' + latest.period + '">' + esc(t("viewPayslip")) + '</button></div>' +
+      '</div>' +
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("earlierPayslips")) + '</div>' +
+        '<div class="card pad0 list">' +
+          PAID_PERIODS.map(function(pm){
+            var ps = myPayslip(pm);
+            return '<div class="row" data-ps="' + pm + '" style="cursor:pointer">' +
+              '<div><div class="primary">' + esc(periodLabel(pm, st.lang)) + '</div>' +
+                '<div class="sub num">' + esc(pm + "-29") + '</div></div>' +
+              '<div style="display:flex;align-items:center;gap:10px"><span class="big" style="font-size:14px">' + lak(ps.net) + '</span>' +
+                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--n500)" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>' +
+            '</div>';
+          }).join("") +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  function payslipDetail(ps){
+    var lines = [
+      [t("basic"), lak(ps.basic), false, false],
+      [t("ot"), lak(ps.ot), false, false],
+      [t("allow"), lak(ps.allow), false, false],
+      [t("gross"), lak(ps.gross), true, false],
+      [t("sso"), "−" + lak(ps.sso), false, true],
+      [t("tax"), "−" + lak(ps.tax), false, true]
+    ];
+    return '<div style="display:flex;flex-direction:column;gap:15px">' +
+      '<button data-back="1" style="background:none;border:0;cursor:pointer;font:inherit;display:flex;align-items:center;gap:6px;color:var(--a700);font-size:12.5px;padding:0">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>' + esc(t("allPayslips")) +
+      '</button>' +
+      '<div><div class="kicker">' + esc(t("payslip")) + '</div>' +
+        '<div class="h" style="font-size:24px;margin-top:4px">' + esc(periodLabel(ps.period, st.lang)) + '</div></div>' +
+      '<div>' +
+        lines.map(function(l){
+          var c = l[3] ? "var(--n700)" : "var(--text)";
+          var w = l[2] ? "600" : "400";
+          return '<div class="row" style="padding:11px 0;border-bottom:1px solid var(--divider)">' +
+            '<span style="font-size:12.5px;color:' + c + ';font-weight:' + w + '">' + esc(l[0]) + '</span>' +
+            '<span class="num" style="font-size:12.5px;color:' + c + ';font-weight:' + w + '">' + esc(l[1]) + '</span></div>';
+        }).join("") +
+      '</div>' +
+      '<div class="card accent row baseline">' +
+        '<span style="font-weight:600;font-size:15px;color:var(--a900)">' + esc(t("netPay")) + '</span>' +
+        '<span class="big" style="font-size:24px;color:var(--a900)">' + lak(ps.net) + '</span>' +
+      '</div>' +
+      '<div class="muted">' + esc(t("payNote")) + '</div>' +
+    '</div>';
+  }
+  bodyBind.PAY = function(){
+    elApp.querySelectorAll("[data-ps]").forEach(function(b){
+      b.addEventListener("click", function(){ st.payslipOpen = b.getAttribute("data-ps"); render(); });
+    });
+    var back = elApp.querySelector("[data-back]");
+    if (back) back.addEventListener("click", function(){ st.payslipOpen = null; render(); });
+  };
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — Profile
+  ──────────────────────────────────────────────────────────────── */
+  function viewProfile(){
+    var u = st.user;
+    var rows = [
+      [t("phone"), u.phone], [t("address"), u.addr], [t("dateOfBirth"), u.dob],
+      [t("startDate"), u.start], [t("nationalId"), u.nid], [t("bankAccount"), u.bank]
+    ];
+    return '<div style="display:flex;flex-direction:column;gap:16px">' +
+      '<div class="card" style="display:flex;gap:13px;align-items:center">' +
+        '<div class="avatar" style="width:46px;height:46px;font-size:16px">' + esc(u.initials) + '</div>' +
+        '<div><div class="h">' + esc(nm(u)) + '</div>' +
+          '<div class="muted">' + esc(title(u)) + ' · ' + esc(roleLabel(u.role)) + ' · #' + esc(u.code) + '</div></div>' +
+      '</div>' +
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("personalInfo")) + '</div>' +
+        '<div class="card pad0 list">' +
+          rows.map(function(r){
+            return '<div class="row"><span class="muted">' + esc(r[0]) + '</span>' +
+              '<span style="font-size:12.5px" class="num">' + esc(r[1]) + '</span></div>';
+          }).join("") +
+        '</div>' +
+        '<div class="muted" style="margin-top:8px">' + esc(t("hrOnlyNote")) + '</div>' +
+      '</div>' +
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("workplace")) + '</div>' +
+        '<div class="card">' +
+          '<div style="font-size:13px">' + esc(OFFICE.name) + '</div>' +
+          '<div class="muted" style="margin-top:3px">' + esc(st.lang==="lo"?OFFICE.addressLo:OFFICE.addressEn) + '</div>' +
+          '<div class="muted" style="margin-top:6px">' + esc(t("locCheck")) + ' · ' + OFFICE.radiusM + ' m radius</div>' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn secondary" id="p-out">' + esc(t("signOut")) + '</button>' +
+    '</div>';
+  }
+  bodyBind.ME = function(){
+    var b = document.getElementById("p-out");
+    if (b) b.addEventListener("click", signOut);
+  };
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — Team (manager roll call)
+  ──────────────────────────────────────────────────────────────── */
+  function viewTeam(){
+    var reports = STAFF.filter(function(s){ return s.role === "EMPLOYEE"; });
+    var inCount = reports.filter(function(s){ return s.todayIn; }).length;
+    return '<div style="display:flex;flex-direction:column;gap:16px">' +
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("rollToday")) + '</div>' +
+        '<div class="statrow">' +
+          '<div><div class="v">' + inCount + '</div><div class="l">' + esc(t("present")) + '</div></div>' +
+          '<div><div class="v" style="color:var(--a700)">1</div><div class="l">' + esc(t("late")) + '</div></div>' +
+          '<div><div class="v">' + (reports.length - inCount) + '</div><div class="l">' + esc(t("notInYet")) + '</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card pad0 list">' +
+        reports.map(function(s){
+          var late = s.todayIn && s.todayIn > "09:30";
+          var tag = !s.todayIn
+            ? '<span class="tag">' + esc(t("notInYet")) + '</span>'
+            : '<span class="tag ' + (late?"accent":"ok") + '">' + esc(t("inShort")) + ' ' + esc(s.todayIn) + '</span>';
+          return '<div class="row"><div style="display:flex;align-items:center;gap:11px">' +
+              '<div class="avatar" style="width:34px;height:34px;font-size:12px">' + esc(s.initials) + '</div>' +
+              '<div><div class="primary">' + esc(nm(s)) + '</div><div class="sub">' + esc(title(s)) + '</div></div>' +
+            '</div>' + tag + '</div>';
+        }).join("") +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — Approvals (manager)
+  ──────────────────────────────────────────────────────────────── */
+  function viewApprovals(){
+    var seg = '<div class="seg">' +
+      '<button data-at="leave" aria-pressed="' + (st.apprTab==="leave") + '">' + esc(t("leaveApprovals")) +
+        (st.pending.length ? " (" + st.pending.length + ")" : "") + '</button>' +
+      '<button data-at="att" aria-pressed="' + (st.apprTab==="att") + '">' + esc(t("attendanceCorrections")) + '</button>' +
+    '</div>';
+
+    var content;
+    if (st.apprTab === "att"){
+      content = '<div class="card" style="align-items:center;text-align:center;padding:34px 16px;display:flex;flex-direction:column">' +
+        '<div class="h">' + esc(t("noCorrections")) + '</div>' +
+        '<div class="muted" style="margin-top:6px">' + esc(t("allClearNote")) + '</div></div>';
+    } else if (st.pending.length === 0){
+      content = '<div class="card" style="align-items:center;text-align:center;padding:34px 16px;display:flex;flex-direction:column">' +
+        '<div class="h">' + esc(t("allClear")) + '</div>' +
+        '<div class="muted" style="margin-top:6px">' + esc(t("allClearNote")) + '</div></div>';
+    } else {
+      content = st.pending.map(function(r){
+        var s = byCode[r.code];
+        var tkey = r.type==="ANNUAL"?"annual":r.type==="SICK"?"sick":"personal";
+        return '<div class="card" style="display:flex;flex-direction:column;gap:11px" data-card="' + r.id + '">' +
+          '<div style="display:flex;align-items:center;gap:11px">' +
+            '<div class="avatar" style="width:34px;height:34px;font-size:12px">' + esc(s.initials) + '</div>' +
+            '<div style="flex:1"><div style="font-size:13.5px">' + esc(nm(s)) + '</div>' +
+              '<div class="sub">' + esc(t(tkey)) + '</div></div>' +
+            '<span class="big" style="font-size:20px">' + r.wd + '</span>' +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--n800)">' + esc(rangeLabel(r.from,r.to,st.lang)) + '</div>' +
+          '<div class="muted">' + esc(r.reason) + '</div>' +
+          '<div style="display:flex;gap:9px">' +
+            '<button class="btn" style="flex:1" data-ok="' + r.id + '">' + esc(t("approve")) + '</button>' +
+            '<button class="btn secondary" style="flex:1" data-no="' + r.id + '">' + esc(t("reject")) + '</button>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+    }
+    return seg + '<div style="height:2px"></div>' + content;
+  }
+  bodyBind.APPR = function(){
+    elApp.querySelectorAll("[data-at]").forEach(function(b){
+      b.addEventListener("click", function(){ st.apprTab = b.getAttribute("data-at"); render(); });
+    });
+    var decide = function(id, ok){
+      st.pending = st.pending.filter(function(r){ return r.id !== id; });
+      flash(ok ? t("approvedToast") : t("rejectedToast"));
+      render();
+    };
+    elApp.querySelectorAll("[data-ok]").forEach(function(b){
+      b.addEventListener("click", function(){ decide(b.getAttribute("data-ok"), true); });
+    });
+    elApp.querySelectorAll("[data-no]").forEach(function(b){
+      b.addEventListener("click", function(){ decide(b.getAttribute("data-no"), false); });
+    });
+  };
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — Payroll run (HR)
+  ──────────────────────────────────────────────────────────────── */
+  function viewRun(){
+    var rows = STAFF.map(function(s){ return { s:s, p:computePay(s) }; });
+    var tot = rows.reduce(function(a,r){
+      a.gross += r.p.gross; a.sso += r.p.sso; a.tax += r.p.tax; a.net += r.p.net; return a;
+    }, {gross:0,sso:0,tax:0,net:0});
+
+    return '<div style="display:flex;flex-direction:column;gap:16px">' +
+      '<div class="card">' +
+        '<div class="kicker">' + esc(t("periodOpenLabel")) + '</div>' +
+        '<div class="h" style="font-size:22px;margin-top:5px">' + esc(periodLabel(PERIOD, st.lang)) + '</div>' +
+        '<div class="divider"></div>' +
+        '<div class="row"><span class="muted">' + esc(t("headcount")) + '</span><span class="big" style="font-size:16px">' + STAFF.length + '</span></div>' +
+        '<div class="row" style="margin-top:8px"><span class="muted">' + esc(t("gross")) + '</span><span class="big" style="font-size:16px">' + lak(tot.gross) + '</span></div>' +
+        '<div class="row" style="margin-top:8px"><span class="muted">' + esc(t("ssoTotal")) + '</span><span class="num" style="font-size:13px;color:var(--n700)">−' + lak(tot.sso) + '</span></div>' +
+        '<div class="row" style="margin-top:8px"><span class="muted">' + esc(t("taxTotal")) + '</span><span class="num" style="font-size:13px;color:var(--n700)">−' + lak(tot.tax) + '</span></div>' +
+      '</div>' +
+
+      '<div class="card accent row baseline">' +
+        '<span style="font-weight:600;font-size:15px;color:var(--a900)">' + esc(t("netPay")) + '</span>' +
+        '<span class="big" style="font-size:24px;color:var(--a900)">' + lak(tot.net) + '</span>' +
+      '</div>' +
+
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("perPerson")) + '</div>' +
+        '<div class="card pad0 list">' +
+          rows.map(function(r){
+            return '<div class="row"><div><div class="primary">' + esc(nm(r.s)) + '</div>' +
+              '<div class="sub">' + esc(title(r.s)) + '</div></div>' +
+              '<span class="big" style="font-size:13.5px">' + lak(r.p.net) + '</span></div>';
+          }).join("") +
+        '</div>' +
+      '</div>' +
+
+      (st.runApproved
+        ? '<div class="card ok-note" style="border-color:var(--okBorder);background:var(--okBg);display:flex;align-items:center;gap:10px">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"><path d="M4 12.5l5 5 11-11"/></svg>' +
+            '<span style="font-size:13px;color:var(--ok)">' + esc(t("runApprovedToast")) + '</span></div>'
+        : '<button class="btn" id="run-go">' + esc(t("approveRun")) + '</button>') +
+    '</div>';
+  }
+  bodyBind.RUN = function(){
+    var b = document.getElementById("run-go");
+    if (b) b.addEventListener("click", function(){ st.runApproved = true; flash(t("runApprovedToast")); render(); });
+  };
+
+  /* ────────────────────────────────────────────────────────────────
+     Screen — People (HR directory)
+  ──────────────────────────────────────────────────────────────── */
+  function viewPeople(){
+    return '<div style="display:flex;flex-direction:column;gap:16px">' +
+      '<div><div class="h" style="margin-bottom:8px">' + esc(t("directory")) + '</div>' +
+        '<div class="card pad0 list">' +
+          STAFF.map(function(s){
+            var cls = s.late === 0 ? "g" : s.late <= 3 ? "y" : "r";
+            var lateTxt = s.late === 0 ? t("noLateThisMonth")
+              : s.late + " " + t("times") + " " + t("lateThisMonth").toLowerCase();
+            return '<div class="row"><div style="display:flex;align-items:center;gap:11px">' +
+                '<span class="dot ' + cls + '"></span>' +
+                '<div><div class="primary">' + esc(nm(s)) + '</div>' +
+                  '<div class="sub">' + esc(title(s)) + ' · ' + esc(lateTxt) + '</div></div>' +
+              '</div>' +
+              '<span class="big" style="font-size:12.5px;color:var(--n600)">' + lak(s.basic) + '</span>' +
+            '</div>';
+          }).join("") +
+        '</div>' +
+        '<div class="muted" style="margin-top:9px">' + esc(t("kpiLegend")) + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Toolbar wiring (outside the phone)
+  ──────────────────────────────────────────────────────────────── */
+  function syncRoleChips(){
+    document.querySelectorAll(".toolbar [data-role]").forEach(function(c){
+      var r = c.getAttribute("data-role");
+      c.setAttribute("aria-pressed", String(st.user && r === st.user.role));
+    });
+  }
+  document.querySelectorAll(".toolbar [data-role]").forEach(function(c){
+    c.addEventListener("click", function(){
+      var r = c.getAttribute("data-role");
+      if (r === "reset"){ signOut(); syncRoleChips(); return; }
+      var first = STAFF.filter(function(s){ return s.role === r; })[0];
+      signIn(first);
+    });
+  });
+
+  /* status-bar clock */
+  function tickClock(){
+    var d = new Date();
+    document.getElementById("clock").textContent =
+      d.getHours() + ":" + String(d.getMinutes()).padStart(2,"0");
+    setTimeout(tickClock, 20000);
+  }
+  tickClock();
+
+  /* go */
+  render();
+})();
+</script>
+</body>
+</html>
