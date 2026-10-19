@@ -16,7 +16,10 @@ import { errorMiddleware } from './http/errorMiddleware';
 /** The Express app with every route mounted, but not listening on a port. */
 export function createApp() {
   const app = express();
-  app.use(cors());
+  // CORS_ORIGIN: comma-separated list of allowed origins in prod (e.g. your
+  // Vercel domain). Unset in local dev = reflect any origin, same as before.
+  const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean);
+  app.use(cors(allowedOrigins?.length ? { origin: allowedOrigins } : undefined));
   app.use(express.json());
 
   app.get('/health', (_req, res) => res.json({ ok: true }));

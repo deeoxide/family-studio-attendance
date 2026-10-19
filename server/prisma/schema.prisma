@@ -4,7 +4,13 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Runtime queries go through Supabase's connection pooler (PgBouncer,
+  // transaction mode, port 6543) — cheap, scales across serverless/many
+  // connections, but can't hold the advisory locks or prepared statements
+  // Prisma Migrate needs. directUrl is the direct connection (port 5432,
+  // no pooling) used only for `prisma migrate` / `db push`. See server/.env.example.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // Roles/types/statuses are plain strings rather than native Postgres enums
